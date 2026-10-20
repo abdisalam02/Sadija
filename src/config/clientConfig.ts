@@ -14,12 +14,6 @@ export const clientProfile: ClientProfile = {
       tag: 'Linen Drape'
     },
     {
-      id: 'look-2',
-      title: 'Striped Silhouette',
-      imageSrc: './img/perfect2.png',
-      tag: 'Striped Shirt'
-    },
-    {
       id: 'look-3',
       title: 'Chambray Denim',
       imageSrc: './img/perfect3.png',

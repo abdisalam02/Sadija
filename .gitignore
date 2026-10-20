@@ -9,7 +9,6 @@ test_*.js
 audit_*.cjs
 get_*.cjs
 fetch_*.cjs
-shot_*.png
-screenshot_*.png
-test_screen.png
+*.png
+!public/**
 chrome_tmp/
