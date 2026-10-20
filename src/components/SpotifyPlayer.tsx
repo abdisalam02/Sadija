@@ -85,9 +85,9 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   };
 
   return (
-    <div className="w-[68%] min-w-[210px] sm:w-[56%] lg:w-full lg:max-w-sm ml-auto mr-0 rounded-3xl glass-frosted p-3.5 sm:p-4 shadow-xl card-hover select-none transition-all">
+    <div className="w-[56%] min-w-[175px] max-w-[230px] sm:w-[48%] sm:max-w-[250px] lg:w-[250px] ml-auto mr-0 rounded-2xl glass-frosted p-2.5 sm:p-3 shadow-lg card-hover select-none transition-all">
       {/* 1. Album Artwork with Spotify Badge */}
-      <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-md bg-neutral-900/10 mb-3 group">
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden shadow-sm bg-neutral-900/10 mb-2 group">
         <AnimatePresence mode="wait">
           <motion.img
             key={current.id}
@@ -96,55 +96,55 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="w-full h-full object-cover"
             loading="lazy"
           />
         </AnimatePresence>
 
         {/* Spotify Logo Pill Badge */}
-        <div className="absolute top-2.5 right-2.5 px-2 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 flex items-center gap-1 shadow-sm">
+        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/10 flex items-center gap-1 shadow-sm">
           <SpotifyLogo />
-          <span className="text-[10px] font-bold tracking-tight text-white uppercase font-syne">
+          <span className="text-[9px] font-bold tracking-tight text-white uppercase font-syne">
             Spotify
           </span>
         </div>
       </div>
 
-      {/* 2. Track & Artist Typography (Clean, zero fluff) */}
-      <div className="px-1 space-y-0.5 mb-3">
-        <h4 className="font-syne font-bold text-sm sm:text-base text-neutral-900 tracking-tight leading-snug truncate">
+      {/* 2. Track & Artist Typography (Clean, compact) */}
+      <div className="px-0.5 space-y-0.5 mb-2">
+        <h4 className="font-syne font-bold text-xs sm:text-sm text-neutral-900 tracking-tight leading-snug truncate">
           {current.title}
         </h4>
-        <p className="text-xs text-neutral-500 font-medium truncate">
+        <p className="text-[11px] text-neutral-500 font-medium truncate">
           {current.artist}
         </p>
       </div>
 
-      {/* 3. Sleek Interactive Action Row (Flip Through Playlist + Listen Direct) */}
-      <div className="pt-2 border-t border-black/5 flex items-center justify-between gap-2">
+      {/* 3. Sleek Interactive Action Row */}
+      <div className="pt-1.5 border-t border-black/5 flex items-center justify-between gap-1">
         {/* Track browsing controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             type="button"
             onClick={handlePrev}
             aria-label="Previous track from playlist"
-            className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-neutral-700 hover:text-black transition-colors shadow-sm active:scale-90"
+            className="w-6 h-6 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-neutral-700 hover:text-black transition-colors shadow-sm active:scale-90"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
 
-          <span className="text-[10px] font-mono font-bold text-neutral-400 px-1">
-            0{currentIndex + 1} / 0{tracks.length}
+          <span className="text-[9px] font-mono font-bold text-neutral-400 px-0.5">
+            0{currentIndex + 1}/0{tracks.length}
           </span>
 
           <button
             type="button"
             onClick={handleNext}
             aria-label="Next track from playlist"
-            className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-neutral-700 hover:text-black transition-colors shadow-sm active:scale-90"
+            className="w-6 h-6 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-neutral-700 hover:text-black transition-colors shadow-sm active:scale-90"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -153,10 +153,10 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           href={current.spotifyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-neutral-950 hover:bg-black text-white text-[11px] font-syne font-bold shadow-sm transition-all active:scale-95"
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-950 hover:bg-black text-white text-[10px] font-syne font-bold shadow-sm transition-all active:scale-95"
         >
           <span>Open</span>
-          <ArrowUpRight className="w-3 h-3 text-neutral-300" />
+          <ArrowUpRight className="w-2.5 h-2.5 text-neutral-300" />
         </a>
       </div>
     </div>
