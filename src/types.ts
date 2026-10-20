@@ -1,0 +1,55 @@
+export type HeroTextStyle = 'crisp-white' | 'frosted-capsule' | 'ambient-scrim' | 'charcoal-classic';
+export type TransitionEffect = 'smooth-melt' | 'slow-dissolve' | 'parallax-drift' | 'editorial-snap';
+
+export interface StudioSettings {
+  textStyle: HeroTextStyle;
+  transitionEffect: TransitionEffect;
+}
+
+export interface StageTransform {
+  scale: number;
+  x: number;
+  y: number;
+}
+
+export interface CreatorLook {
+  id: string;
+  title: string;
+  imageSrc: string; // perfect1 - perfect4
+  tag: string;
+}
+
+export interface SocialLink {
+  id: string;
+  platform: 'instagram' | 'tiktok' | 'youtube' | 'email';
+  label: string;
+  handle: string;
+  url: string;
+  followers?: string;
+}
+
+export interface ClientProfile {
+  name: string;
+  handle: string;
+  title: string;
+  bio: string;
+  location: string;
+  looks: CreatorLook[];
+  socials: SocialLink[];
+  youtube: {
+    title: string;
+    description: string;
+    videoId: string;
+    channelId?: string;
+  };
+  spotify: {
+    trackTitle: string;
+    artist: string;
+    embedUrl: string;
+  };
+  business: {
+    email: string;
+    inquiryNotice: string;
+    management: string;
+  };
+}

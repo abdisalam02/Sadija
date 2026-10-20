@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+*.log
+test_*.cjs
+test_*.js
+audit_*.cjs
+get_*.cjs
+fetch_*.cjs
+shot_*.png
+screenshot_*.png
+test_screen.png
+chrome_tmp/
