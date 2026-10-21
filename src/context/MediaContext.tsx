@@ -38,6 +38,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isYouTubeMuted, setIsYouTubeMuted] = useState(true);
   const [isYouTubeInView, setIsYouTubeInView] = useState(false);
   const ytIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const lastYtState = useRef<number | null>(null);
 
   // Send postMessage to YouTube IFrame
   const sendYouTubeCommand = (func: string, args: any[] = []) => {
@@ -68,7 +69,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     const audio = new Audio(episode.previewUrl);
-    audio.volume = 0.85;
+    audio.volume = 0.35;
     audio.onended = () => {
       setIsSpotifyPlaying(false);
     };
@@ -151,6 +152,39 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audioRef.current.pause();
       }
     };
+  }, []);
+
+  // Mirror taps made inside the YouTube player (controls are hidden, so the video itself is the play button)
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (typeof e.data !== 'string' || !e.origin.includes('youtube')) return;
+      let data: any;
+      try {
+        data = JSON.parse(e.data);
+      } catch {
+        return;
+      }
+      const state =
+        data.event === 'onStateChange' ? data.info : data.info?.playerState;
+      if (typeof state === 'number' && state !== lastYtState.current) {
+        lastYtState.current = state;
+        if (state === 1) {
+          setIsYouTubePlaying(true);
+          // Only a user-started, audible video should silence Spotify
+          if (data.info?.muted === false) {
+            audioRef.current?.pause();
+            setIsSpotifyPlaying(false);
+          }
+        } else if (state === 2) {
+          setIsYouTubePlaying(false);
+        }
+      }
+      if (typeof data.info?.muted === 'boolean') {
+        setIsYouTubeMuted(data.info.muted);
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
   }, []);
 
   return (

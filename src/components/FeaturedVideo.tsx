@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Youtube, ArrowUpRight, Volume2, VolumeX, Play, Pause } from 'lucide-react';
+import { ArrowUpRight, Volume2, VolumeX, Play } from 'lucide-react';
 import { useMedia } from '../context/MediaContext';
 
 interface FeaturedVideoProps {
@@ -31,6 +31,14 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
     setYouTubeTitle(title);
   }, [title]);
 
+  // Ask the player to report state changes so taps inside the video keep the UI in sync
+  const handleIframeLoad = () => {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }),
+      '*'
+    );
+  };
+
   return (
     <motion.div
       onViewportEnter={() => setIsYouTubeInView(true)}
@@ -41,8 +49,10 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
       {/* Header: YouTube Logo + Direct Controls + External Link */}
       <div className="flex items-center justify-between pb-3.5 border-b border-black/5 mb-3.5">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center text-white shadow-sm">
-            <Youtube className="w-4 h-4 fill-current" />
+          <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center shadow-sm">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white" aria-hidden="true">
+              <path d="M9.5 7.2v9.6a.5.5 0 0 0 .76.43l7.9-4.8a.5.5 0 0 0 0-.86l-7.9-4.8a.5.5 0 0 0-.76.43z" />
+            </svg>
           </div>
           <span className="font-syne font-bold text-xs uppercase tracking-wider text-neutral-900">
             YouTube
@@ -50,43 +60,17 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Quick Play/Pause Button */}
-          <button
-            type="button"
-            onClick={toggleYouTubePlay}
-            aria-label={isYouTubePlaying ? 'Pause video' : 'Play video'}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 hover:bg-black/10 text-neutral-800 text-[11px] font-syne font-semibold transition-all active:scale-95"
-          >
-            {isYouTubePlaying ? (
-              <>
-                <Pause className="w-3 h-3 fill-current" />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3 h-3 fill-current ml-0.5" />
-                <span>Play</span>
-              </>
-            )}
-          </button>
-
-          {/* Quick Audio Toggle Button */}
+          {/* Icon-only mute / unmute toggle */}
           <button
             type="button"
             onClick={toggleYouTubeAudio}
-            aria-label={isYouTubeMuted ? 'Turn audio on' : 'Mute audio'}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 hover:bg-black/10 text-neutral-800 text-[11px] font-syne font-semibold transition-all active:scale-95"
+            aria-label={isYouTubeMuted ? 'Unmute video' : 'Mute video'}
+            className="w-8 h-8 rounded-full bg-neutral-950 hover:bg-black text-white flex items-center justify-center shadow-sm transition-all active:scale-90"
           >
             {isYouTubeMuted ? (
-              <>
-                <VolumeX className="w-3 h-3 text-amber-600" />
-                <span>Unmute</span>
-              </>
+              <VolumeX className="w-4 h-4" />
             ) : (
-              <>
-                <Volume2 className="w-3 h-3 text-emerald-600" />
-                <span>Mute</span>
-              </>
+              <Volume2 className="w-4 h-4 text-emerald-400" />
             )}
           </button>
 
@@ -95,23 +79,35 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Watch on YouTube"
-            className="w-7 h-7 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-neutral-600 hover:text-black transition-colors shadow-sm ml-1"
+            className="w-8 h-8 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-neutral-600 hover:text-black transition-colors shadow-sm"
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
 
-      {/* 16:9 Viewport with Auto-Play Enabled & Native Controls */}
-      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/10 shadow-inner pointer-events-auto">
+      {/* 16:9 Viewport: iframe ignores pointer input, the overlay button makes a tap play or pause */}
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/10 shadow-inner">
         <iframe
           ref={iframeRef}
-          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&controls=1&rel=0&modestbranding=1`}
+          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&rel=0&modestbranding=1`}
           title={title}
-          className="w-full h-full border-0 pointer-events-auto"
+          onLoad={handleIframeLoad}
+          className="w-full h-full border-0 pointer-events-none"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
         />
+        <button
+          type="button"
+          onClick={toggleYouTubePlay}
+          aria-label={isYouTubePlaying ? 'Pause video' : 'Play video'}
+          className="absolute inset-0 w-full h-full flex items-center justify-center cursor-pointer"
+        >
+          {!isYouTubePlaying && (
+            <span className="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+              <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Video Title */}

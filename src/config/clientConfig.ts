@@ -10,19 +10,19 @@ export const clientProfile: ClientProfile = {
     {
       id: 'look-1',
       title: 'Seated Linen Drape',
-      imageSrc: './img/2-removebg-preview.png',
+      imageSrc: './img/2-removebg-preview.webp',
       tag: 'Linen Drape'
     },
     {
       id: 'look-2',
       title: 'Chambray Denim',
-      imageSrc: './img/IMG_5196-removebg-preview.png',
+      imageSrc: './img/IMG_5196-removebg-preview.webp',
       tag: 'Denim Edition'
     },
     {
       id: 'look-3',
       title: 'Noir Trench & Optics',
-      imageSrc: './img/1-removebg-preview.png',
+      imageSrc: './img/1-removebg-preview.webp',
       tag: 'Noir Trench'
     }
   ],

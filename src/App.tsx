@@ -105,7 +105,7 @@ export function App() {
         {/* 2. FULL-HEIGHT MOBILE-FIRST VISUAL STAGE (Completely Static Backdrop across Mobile Browsers) */}
         <aside
           aria-label="Sadija Visual Stage"
-          className="fixed inset-y-0 left-0 w-full lg:w-[50vw] h-full z-20 pointer-events-none"
+          className="fixed top-0 left-0 w-full lg:w-[50vw] h-[100lvh] z-20 pointer-events-none"
         >
           <EditorialStage
             looks={clientProfile.looks}
