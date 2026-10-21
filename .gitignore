@@ -9,6 +9,10 @@ test_*.js
 audit_*.cjs
 get_*.cjs
 fetch_*.cjs
+fetch_*.js
+parse_*.cjs
+*_dump.html
+embed_data.json
 *.png
 !public/**
 chrome_tmp/

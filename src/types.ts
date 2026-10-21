@@ -28,6 +28,17 @@ export interface SocialLink {
   followers?: string;
 }
 
+export interface PodcastEpisode {
+  id: string;
+  title: string;
+  show: string;
+  date: string;
+  duration: string;
+  artwork: string;
+  spotifyUrl: string;
+  previewUrl?: string;
+}
+
 export interface ClientProfile {
   name: string;
   handle: string;
@@ -42,10 +53,16 @@ export interface ClientProfile {
     videoId: string;
     channelId?: string;
   };
-  spotify: {
+  spotify?: {
     trackTitle: string;
     artist: string;
     embedUrl: string;
+  };
+  podcast?: {
+    showTitle: string;
+    showUrl: string;
+    coverArt?: string;
+    episodes: PodcastEpisode[];
   };
   business: {
     email: string;

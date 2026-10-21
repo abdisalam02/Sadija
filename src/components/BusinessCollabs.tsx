@@ -45,13 +45,14 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
 
       {/* Clean Unboxed Interactive Actions */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+        {/* Black Glass Card specifically for the Gmail */}
         <a
-          href={`mailto:${email}?subject=Collaboration%20Inquiry%20—%20Sadija%20Gure`}
-          className="py-3.5 px-6 rounded-full bg-neutral-950 text-white font-syne font-bold text-xs tracking-wider uppercase hover:bg-black transition-all text-center flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
+          href={`mailto:${email}?subject=Collaboration%20Inquiry%20—%20Sadija`}
+          className="py-3.5 px-6 rounded-full bg-neutral-950/90 hover:bg-black backdrop-blur-md border border-white/15 text-white font-syne font-bold text-xs tracking-wider transition-all text-center flex items-center justify-center gap-2.5 shadow-lg active:scale-[0.98]"
         >
-          <Mail className="w-4 h-4" />
-          <span>Send Inquiry</span>
-          <ArrowUpRight className="w-4 h-4" />
+          <Mail className="w-4 h-4 text-white/80" />
+          <span>{email}</span>
+          <ArrowUpRight className="w-4 h-4 text-white/70" />
         </a>
 
         <button
@@ -67,7 +68,7 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
           ) : (
             <>
               <Copy className="w-4 h-4 text-neutral-500" />
-              <span className="truncate">{email}</span>
+              <span>Copy</span>
             </>
           )}
         </button>

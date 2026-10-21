@@ -1,11 +1,12 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { CreatorLook, StageTransform } from '../types';
 
 // Responsive viewport-relative locked transforms (zero jitter, responsive across 375px - 430px+ mobile & desktop)
 export const LOCKED_TRANSFORMS: Record<string, StageTransform> = {
-  'look-1': { scale: 1.45, x: '-20svh', y: '-8svh' }, // Flushes draped elbow directly to left screen edge
-  'look-3': { scale: 1.25, x: '-15svh', y: '-3svh' }, // Shifted slightly right from edge for relaxed breathing composition
-  'look-4': { scale: 1.36, x: '-10svh', y: '6svh' },  // Anchored down so trench coat extends to bottom
+  'look-1': { scale: 1.35, x: '-19svh', y: '-5svh' }, // Flushes draped elbow directly to left screen edge (2-remove)
+  'look-2': { scale: 1.35, x: '-14svh', y: '-5svh' }, // Shifted slightly right for relaxed breathing composition (IMG_5196 denim)
+  'look-3': { scale: 1.35, x: '14svh', y: '-5svh' },  // Hugs the right screen edge (1-remove trench)
 };
 
 const formatCoord = (val: number | string): string => {
@@ -23,12 +24,10 @@ export const EditorialStage: React.FC<EditorialStageProps> = ({
 }) => {
   return (
     <div className="relative w-full h-full flex items-start justify-start overflow-hidden select-none pointer-events-none transform-gpu">
-      {/* GPU-Accelerated Layered Slow Dissolve (Zero Jank / Zero Framerate Drops) */}
+      {/* GPU-Accelerated Editorial Motion Dissolve with Optical Rack Focus & Depth Breathing */}
       {looks.map((look, idx) => {
         const isActive = idx === activeLookIndex;
         const transform = LOCKED_TRANSFORMS[look.id] || { scale: 1.2, x: 0, y: 0 };
-        const isLook1 = look.id === 'look-1';
-        const isLook4 = look.id === 'look-4';
 
         return (
           <div
@@ -39,23 +38,31 @@ export const EditorialStage: React.FC<EditorialStageProps> = ({
               backfaceVisibility: 'hidden',
               transformStyle: 'preserve-3d',
             }}
-            className={`absolute inset-0 w-full h-full flex items-start justify-start pointer-events-none origin-top-left transition-opacity duration-1000 ease-in-out will-change-opacity transform-gpu ${
-              isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            className={`absolute inset-0 w-full h-full flex items-start justify-start pointer-events-none origin-top-left transform-gpu ${
+              isActive ? 'z-10' : 'z-0'
             }`}
           >
-            <img
-              src={look.imageSrc}
-              alt={`${look.title} — Sadija Gure`}
-              className={`${
-                isLook1
-                  ? 'h-[76svh] sm:h-[82svh] lg:h-[95svh]'
-                  : isLook4
-                  ? 'h-[88svh] sm:h-[94svh] lg:h-full'
-                  : 'h-[76svh] sm:h-[82svh] lg:h-[95svh]'
-              } w-auto max-w-none object-contain object-left-top ml-0 pt-0`}
-              loading="eager"
-              decoding="async"
-            />
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: isActive ? 1 : 0,
+                scale: isActive ? 1 : 1.04,
+                filter: isActive ? 'blur(0px)' : 'blur(5px)',
+              }}
+              transition={{
+                duration: 0.9,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="w-full h-full flex items-start justify-start pointer-events-none origin-top-left will-change-transform transform-gpu"
+            >
+              <img
+                src={look.imageSrc}
+                alt={`${look.title} — Sadija`}
+                className="h-[80svh] sm:h-[85svh] lg:h-[95svh] w-auto max-w-none object-contain object-left-top ml-0 pt-0"
+                loading="eager"
+                decoding="async"
+              />
+            </motion.div>
           </div>
         );
       })}
