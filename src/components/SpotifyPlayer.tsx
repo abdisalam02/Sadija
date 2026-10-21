@@ -15,36 +15,36 @@ export const SpotifyPlayer: React.FC = () => {
   const { spotifyEpisode, isSpotifyPlaying, playSpotifyEpisode } = useMedia();
 
   return (
-    <div className="w-[58%] min-w-[190px] max-w-[250px] sm:w-[48%] sm:max-w-[270px] lg:w-[270px] ml-auto mr-0 rounded-2xl glass-frosted p-3 shadow-lg card-hover select-none transition-all">
+    <div className="w-[72%] min-w-[240px] max-w-[320px] sm:w-[60%] sm:max-w-[330px] lg:w-[320px] ml-auto mr-0 rounded-3xl glass-frosted p-3.5 sm:p-4 shadow-lg card-hover select-none transition-all">
       {/* 1. Show Header */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/5">
-        <div className="flex items-center gap-1.5 min-w-0">
+      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-black/5">
+        <div className="flex items-center gap-2 min-w-0">
           <SpotifyLogo />
-          <span className="font-syne font-bold text-xs text-neutral-900 tracking-tight truncate">
+          <span className="font-syne font-bold text-xs sm:text-sm text-neutral-900 tracking-tight truncate">
             {podcast?.showTitle || 'sadija.s podcast'}
           </span>
         </div>
-        <span className="text-[9px] font-mono uppercase tracking-wider font-semibold text-neutral-400 flex-shrink-0">
+        <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-neutral-400 flex-shrink-0">
           Podcast
         </span>
       </div>
 
       {/* 2. Scrollable Episodes Stream */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {episodes.map((ep) => {
           const isPlaying = isSpotifyPlaying && spotifyEpisode?.id === ep.id;
           return (
             <div
               key={ep.id}
               onClick={() => ep.previewUrl && playSpotifyEpisode(ep)}
-              className={`p-2 rounded-xl transition-all flex items-start gap-2.5 group cursor-pointer ${
+              className={`p-2.5 rounded-2xl transition-all flex items-start gap-3 group cursor-pointer ${
                 isPlaying
                   ? 'bg-neutral-900 text-white shadow-md'
                   : 'bg-white/60 hover:bg-white/90 text-neutral-900'
               }`}
             >
               {/* Artwork with Play/Pause Indicator */}
-              <div className="relative w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-neutral-900/10 shadow-xs">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900/10 shadow-xs">
                 <img
                   src={ep.artwork}
                   alt={ep.title}
@@ -68,16 +68,16 @@ export const SpotifyPlayer: React.FC = () => {
 
               {/* Title, Duration & Live Playing Wave */}
               <div className="min-w-0 flex-1 pt-0.5">
-                <div className="flex items-center gap-1 mb-0.5">
+                <div className="flex items-center gap-1 mb-1">
                   <h5
-                    className={`font-syne font-bold text-[11px] leading-snug line-clamp-2 ${
+                    className={`font-syne font-bold text-xs sm:text-[13px] leading-snug line-clamp-2 ${
                       isPlaying ? 'text-white' : 'text-neutral-900'
                     }`}
                   >
                     {ep.title}
                   </h5>
                 </div>
-                <div className="flex items-center gap-1.5 text-[9px]">
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px]">
                   <span
                     className={`font-medium ${
                       isPlaying ? 'text-neutral-300' : 'text-neutral-500'
@@ -95,7 +95,7 @@ export const SpotifyPlayer: React.FC = () => {
                   </span>
                   {isPlaying && (
                     <span className="flex items-center gap-0.5 ml-auto text-[#1ed760]">
-                      <Volume2 className="w-3 h-3 animate-pulse" />
+                      <Volume2 className="w-3.5 h-3.5 animate-pulse" />
                     </span>
                   )}
                 </div>
@@ -106,18 +106,18 @@ export const SpotifyPlayer: React.FC = () => {
       </div>
 
       {/* 3. Direct Show Link to Spotify */}
-      <div className="pt-2.5 mt-2 border-t border-black/5 flex items-center justify-between">
-        <span className="text-[10px] font-medium text-neutral-500 font-syne">
+      <div className="pt-3 mt-2.5 border-t border-black/5 flex items-center justify-between">
+        <span className="text-[11px] font-medium text-neutral-500 font-syne">
           Stream on Spotify
         </span>
         <a
           href={podcast?.showUrl || 'https://open.spotify.com/show/1AKPeARcw0ehY0NkFzJnLq'}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-950 hover:bg-black text-white text-[10px] font-syne font-bold shadow-xs transition-all active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-950 hover:bg-black text-white text-[10px] font-syne font-bold shadow-xs transition-all active:scale-95"
         >
           <span>Open Show</span>
-          <ArrowUpRight className="w-2.5 h-2.5 text-neutral-300" />
+          <ArrowUpRight className="w-3 h-3 text-neutral-300" />
         </a>
       </div>
     </div>
