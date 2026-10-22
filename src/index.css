@@ -3,9 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * App-shell lock: the document itself is never scrollable.
+   * This stops mobile browsers from collapsing their address bar while the
+   * content scrolls, which is what made the fixed backdrop shift up/down
+   * before snapping into place. Scrolling now happens inside #app-scroll.
+   */
   html {
     color-scheme: light;
-    scroll-behavior: smooth;
+    overflow: hidden;
     background-color: #fcfbf8;
   }
   
@@ -13,7 +19,8 @@
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    overflow: hidden;
+    overscroll-behavior: none;
     background-color: #fcfbf8;
     color: #141518;
     -webkit-font-smoothing: antialiased;

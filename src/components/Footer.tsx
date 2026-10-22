@@ -6,6 +6,7 @@ interface FooterProps {
   name: string;
   socials: SocialLink[];
   email?: string;
+  onScrollToTop?: () => void;
 }
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -14,9 +15,19 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' })
   </svg>
 );
 
-export const Footer: React.FC<FooterProps> = ({ name, socials, email }) => {
+export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollToTop }) => {
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (onScrollToTop) {
+      onScrollToTop();
+      return;
+    }
+    // Fallback for any future usage outside the app shell
+    const scroller = document.getElementById('app-scroll');
+    if (scroller) {
+      scroller.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const getIcon = (platform: SocialLink['platform']) => {

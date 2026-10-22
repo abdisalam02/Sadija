@@ -5,18 +5,22 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
 
 ## Core Architecture
 
-### 1. Dual-Layer Split Layout
-- **Left Stage (`EditorialStage.tsx`)**:
-  - `fixed top-0 left-0 w-full lg:w-[50vw] h-[100lvh] z-20 pointer-events-none`
-  - Completely static backdrop across mobile viewport height changes (`100lvh` / `108lvh+`).
+### 1. App Shell, Static Stage & Content Stream
+- **App Shell (`App.tsx`)**: the document itself is viewport-locked (`html`/`body` `height: 100%; overflow: hidden`). The only scrolling element is `#app-scroll` (`h-full overflow-y-auto`).
+  - This is deliberate: Android Chrome / Samsung Internet shift `position: fixed` layers by the address-bar height when the toolbar collapses (Chromium issue 41395555). Keeping the document non-scrollable stops the toolbar from collapsing at all, so the artwork can never slide/snap during scroll.
+- **Static Stage (`EditorialStage.tsx`)**:
+  - `absolute top-0 left-0 w-full lg:w-[50vw] h-[100lvh] z-20 pointer-events-none`, rendered inside the `100dvh` shell but **outside** the scroll area.
+  - No `position: fixed`, no scroll-linked transforms on the stage itself.
   - 3-look synchronized scroll dissolve:
     - Look 1: `2-removebg-preview.webp` (Linen Drape - elbow touching left screen edge: `x: -19svh, y: -5lvh`)
     - Look 2: `IMG_5196-removebg-preview.webp` (Chambray Denim - relaxed center-right: `x: -14svh, y: -5lvh`)
     - Look 3: `1-removebg-preview.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
+  - Image heights stay in `lvh` (`108/115/128lvh`) so the photo is never resized by dynamic viewport chrome.
   - Transition: pure 1.4s opacity-only crossfade (no scale/blur jumps).
-- **Right Content Stream (`App.tsx`)**:
-  - `w-full lg:w-[50vw] px-5 sm:px-10 lg:px-14 pt-[44svh] ... z-30`
-  - Starts cleanly below model portrait on mobile.
+- **Content Stream (`App.tsx`)**:
+  - Wrapped in `#app-scroll`; `pt-[44svh] ... z-30` starts cleanly below the model portrait on mobile.
+  - `useScroll` uses `container: scrollRef` (the window never scrolls).
+  - Sections are normal editorial flow (not sticky) to match the shipped layout.
 
 ### 2. Media Coordination (`MediaContext.tsx` & `FloatingPlayer.tsx`)
 - Centralized audio and video controller:
@@ -46,5 +50,6 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
    - One-click copy email button.
 
 ### 4. Smooth Scrolling (`useSmoothScroll.ts`)
-- Lightweight RAF lerp momentum scroll on desktop wheels.
+- Lightweight RAF lerp momentum scroll on desktop wheels, applied to `#app-scroll` (not `window`).
 - Preserves native 120Hz ProMotion touch scrolling on mobile devices.
+- Deep links (`?section=`, hash anchors) and the footer "Back to Top" control scroll the app shell.
