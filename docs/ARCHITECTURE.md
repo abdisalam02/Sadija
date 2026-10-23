@@ -54,3 +54,11 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
 - Lightweight RAF lerp momentum scroll on desktop wheels, applied to `#app-scroll` (not `window`).
 - Preserves native 120Hz ProMotion touch scrolling on mobile devices.
 - Deep links (`?section=`, hash anchors) and the footer "Back to Top" control scroll the app shell.
+
+### 5. Site Sign-off (`Footer.tsx`)
+- Full-width colophon panel (`bg-[#fcfbf8]`) rendered outside the content column, directly after it inside `#app-scroll`.
+- Credited to **A.Gure** (`agure.space`):
+  - A slow mono ticker with a live "available for select projects" dot (pauses on hover, respects `prefers-reduced-motion`).
+  - An oversized `A.GURE` wordmark sized at `14.5vw` so the type exactly fits the footer width at every breakpoint (Syne 800 is ~6.09em wide for the full lockup).
+  - The period is a square that rotates into a diamond on hover; letters lift in a 35ms stagger; the domain underline draws in and the arrow shifts.
+  - The mark reveals with a clipped line mask; the in-view observer is attached to the wrapper (not the clipped span) so it fires reliably.

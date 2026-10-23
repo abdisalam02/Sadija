@@ -215,20 +215,20 @@ export function App() {
                   inquiryNotice={clientProfile.business.inquiryNotice}
                   management={clientProfile.business.management}
                 />
-
-                {/* Enriched Minimalist Footer with Direct Social Links */}
-                <Footer
-                  name={clientProfile.name}
-                  socials={clientProfile.socials}
-                  email={clientProfile.business.email}
-                  onScrollToTop={() =>
-                    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-                  }
-                />
               </motion.section>
 
             </main>
           </div>
+
+          {/* SITE-WIDE SIGN-OFF — A.Gure credit (full width, outside the content column) */}
+          <Footer
+            name={clientProfile.name}
+            socials={clientProfile.socials}
+            email={clientProfile.business.email}
+            onScrollToTop={() =>
+              scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+          />
         </div>
 
         {/* Dynamic Global Media Player Pill (Syncs across Spotify and YouTube) */}

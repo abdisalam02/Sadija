@@ -47,3 +47,40 @@
   background: rgba(255, 255, 255, 0.68);
   box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.09);
 }
+
+/* Footer signature: slow editorial ticker */
+@keyframes footer-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.footer-marquee__track {
+  animation: footer-marquee 36s linear infinite;
+  will-change: transform;
+}
+
+.footer-marquee {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+.footer-marquee:hover .footer-marquee__track,
+.footer-marquee:focus-within .footer-marquee__track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-marquee__track {
+    animation: none;
+    transform: none;
+  }
+
+  .footer-letter,
+  .footer-dot {
+    transition: none !important;
+  }
+}

@@ -6,6 +6,7 @@
 - **Branch**: `main`
 
 ## Latest Work Completed
+- **A.Gure Site Sign-off**: Added a full-width footer colophon credited to A.Gure / `agure.space` — giant 14.5vw `A.GURE` wordmark, square period that rotates into a diamond on hover, staggered letter lift, draw-in domain underline, vertical line-mask reveal, and a slow availability ticker with a live status dot. All motion respects `prefers-reduced-motion`.
 - **High-Resolution Look Images**: Replaced the blurry, 3x-upscaled previews with 2600px-tall assets (`look-1-linen.webp`, `look-2-denim.webp`, `look-3-trench.webp`). The linen look was rebuilt from its 1440×1800 source with the original remove.bg alpha aligned onto it; the denim and trench were AI-upscaled with Real-ESRGAN x4plus from the best available cutouts. Verified at a 390×844 / DPR 3 render.
   - Note: the true originals for the denim (433×577) and trench (408×612) aren't in the repo, so higher-res source photos would improve those two further.
 - **Truly Static Mobile Background**: Replaced the `position: fixed` stage with an app-shell layout — `html`/`body` are viewport-locked and only `#app-scroll` scrolls. This prevents the Android/Samsung address bar from collapsing, which was shifting the fixed artwork up/down before snapping (Chromium issue 41395555). Verified at 375×812, 390×844, 412×915, 430×932 and 1280×800: the stage/image top and size stay constant at every scroll position.
