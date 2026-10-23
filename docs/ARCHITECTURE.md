@@ -14,8 +14,10 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
   - 3-look synchronized scroll dissolve:
     - Look 1: `look-1-linen.webp` (Linen Drape - elbow touching left screen edge: `x: -19svh, y: -5lvh`)
     - Look 2: `look-2-denim.webp` (Chambray Denim - relaxed center-right: `x: -14svh, y: -5lvh`)
-    - Look 3: `look-3-trench.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
-  - Images render at 2600px tall (enough for 3x mobile). Look 1 was rebuilt from its full-resolution 1440×1800 source with the original remove.bg silhouette aligned onto it; looks 2 and 3 were AI-upscaled (Real-ESRGAN x4plus) from the best cutouts available in the repo.
+    - Look 3: `look-3-trench-v2.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
+  - Images render at 2600px tall (enough for 3x mobile). Look 1 was rebuilt from its full-resolution 1440×1800 source with the original remove.bg silhouette aligned onto it; look 2 was AI-upscaled (Real-ESRGAN x4plus) from its 433×577 cutout.
+  - **Look 3 (fixed)**: the original asset was a 4.25× Real-ESRGAN upscale of a 408×612 preview. The model had merged the sunglasses into a flat black bar, waxed the face and melted the coat/denim, which read as "distorted" at full size. The new `look-3-trench-v2.webp` aligns a genuine 1440×1440 cutout of the same frame onto the 2600px canvas (SIFT homography, ~1px), keeps the high-res head/torso down to the waist and feathers into the old upscale over the last ~420px. The bottom of the frame (hand/jeans) still comes from the low-res source; a true full-body original would finish it.
+  - The legacy `look-3-trench.webp` is kept only because the dev-only signature labs still reference it.
   - Image heights stay in `lvh` (`108/115/128lvh`) so the photo is never resized by dynamic viewport chrome.
   - Transition: pure 1.4s opacity-only crossfade (no scale/blur jumps).
 - **Content Stream (`App.tsx`)**:

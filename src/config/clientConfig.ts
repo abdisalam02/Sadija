@@ -22,7 +22,7 @@ export const clientProfile: ClientProfile = {
     {
       id: 'look-3',
       title: 'Noir Trench & Optics',
-      imageSrc: './img/look-3-trench.webp',
+      imageSrc: './img/look-3-trench-v2.webp',
       tag: 'Noir Trench'
     }
   ],
