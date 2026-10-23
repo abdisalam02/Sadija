@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'framer-motion';
 import { ArrowUp, Instagram, Youtube, Mail } from 'lucide-react';
 import { SocialLink } from '../types';
@@ -18,7 +18,46 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' })
 
 export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollToTop }) => {
   const signatureRef = useRef<HTMLAnchorElement>(null);
-  const signatureInView = useInView(signatureRef, { once: true, amount: 0.5 });
+  const signatureInView = useInView(signatureRef, { once: false, amount: 0.5 });
+  const [signatureRun, setSignatureRun] = useState(0);
+  const scrollDirection = useRef<'down' | 'up'>('down');
+  const wasInView = useRef(false);
+  const signatureInViewRef = useRef(false);
+
+  useEffect(() => {
+    signatureInViewRef.current = signatureInView;
+  }, [signatureInView]);
+
+  // Replay the signature write each time it re-enters while scrolling down.
+  useEffect(() => {
+    const scroller = document.getElementById('app-scroll');
+    const getY = () => scroller?.scrollTop ?? window.scrollY;
+    let lastY = getY();
+
+    const onScroll = () => {
+      const y = getY();
+      if (y > lastY + 1) {
+        if (scrollDirection.current !== 'down' && signatureInViewRef.current) {
+          setSignatureRun((run) => run + 1);
+        }
+        scrollDirection.current = 'down';
+      } else if (y < lastY - 1) {
+        scrollDirection.current = 'up';
+      }
+      lastY = y;
+    };
+
+    const target: HTMLElement | Window = scroller ?? window;
+    target.addEventListener('scroll', onScroll, { passive: true });
+    return () => target.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (signatureInView && !wasInView.current && scrollDirection.current === 'down') {
+      setSignatureRun((run) => run + 1);
+    }
+    wasInView.current = signatureInView;
+  }, [signatureInView]);
 
   const scrollToTop = () => {
     if (onScrollToTop) {
@@ -102,17 +141,27 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
           aria-label="A.Gure — agure.space"
           className="group flex flex-col items-start gap-0.5 text-neutral-500 transition-colors duration-300 hover:text-neutral-900 sm:items-end"
         >
-          <span className="font-signature text-[28px] leading-none">A. Gure</span>
-          <svg viewBox="0 0 150 10" className="h-2 w-[120px] overflow-visible text-neutral-400">
-            <path
-              d="M2 7 C 30 2, 52 9, 78 5 S 122 2, 148 6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              className={`ink-underline ${signatureInView ? 'ink-drawn' : ''}`}
-            />
-          </svg>
-          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-neutral-400">
+          <span
+            key={signatureRun}
+            className="signature-replay flex flex-col items-start sm:items-end"
+          >
+            <span className="signature-write block font-signature text-[28px] leading-none">
+              A. Gure
+            </span>
+            <svg viewBox="0 0 150 10" className="h-2 w-[120px] overflow-visible text-neutral-400">
+              <path
+                d="M2 7 C 30 2, 52 9, 78 5 S 122 2, 148 6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+                className="signature-underline"
+              />
+            </svg>
+          </span>
+          <span
+            key={`signature-domain-${signatureRun}`}
+            className="signature-domain font-mono text-[8px] uppercase tracking-[0.2em] text-neutral-400"
+          >
             agure.space ↗
           </span>
         </a>
