@@ -185,7 +185,7 @@ const Wave2Lab: React.FC = () => {
 
               <div className="relative mt-3 overflow-hidden rounded-xl border border-black/10 bg-[#fcfbf8]">
                 <img
-                  src="./img/look-3-trench-v2.webp"
+                  src="./img/look-3-trench-v3.webp"
                   alt=""
                   className="pointer-events-none absolute -right-8 bottom-0 h-[160%] w-auto opacity-[0.05]"
                 />

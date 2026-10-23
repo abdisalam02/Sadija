@@ -14,10 +14,11 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
   - 3-look synchronized scroll dissolve:
     - Look 1: `look-1-linen.webp` (Linen Drape - elbow touching left screen edge: `x: -19svh, y: -5lvh`)
     - Look 2: `look-2-denim.webp` (Chambray Denim - relaxed center-right: `x: -14svh, y: -5lvh`)
-    - Look 3: `look-3-trench-v2.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
+    - Look 3: `look-3-trench-v3.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
   - Images render at 2600px tall (enough for 3x mobile). Look 1 was rebuilt from its full-resolution 1440×1800 source with the original remove.bg silhouette aligned onto it; look 2 was AI-upscaled (Real-ESRGAN x4plus) from its 433×577 cutout.
-  - **Look 3 (fixed)**: the original asset was a 4.25× Real-ESRGAN upscale of a 408×612 preview. The model had merged the sunglasses into a flat black bar, waxed the face and melted the coat/denim, which read as "distorted" at full size. The new `look-3-trench-v2.webp` aligns a genuine 1440×1440 cutout of the same frame onto the 2600px canvas (SIFT homography, ~1px), keeps the high-res head/torso down to the waist and feathers into the old upscale over the last ~420px. The bottom of the frame (hand/jeans) still comes from the low-res source; a true full-body original would finish it.
-  - The legacy `look-3-trench.webp` is kept only because the dev-only signature labs still reference it.
+  - **Look 3 (fixed)**: the original asset was a 4.25× Real-ESRGAN upscale of a 408×612 preview. The model had merged the sunglasses into a flat black bar, waxed the face and melted the coat/denim, which read as "distorted" at full size. `look-3-trench-v3.webp` aligns a genuine 1440×1440 cutout of the same frame onto the 2600px canvas (SIFT homography, ~1px), keeps the high-res head/torso down to the waist and feathers into the old upscale over the last ~420px. The bottom of the frame (hand/jeans) still comes from the low-res source; a true full-body original would finish it.
+  - **Look 3 alpha/marker cleanup**: the ad-hoc upscale had been saved with `cv2.drawKeypoints` debug overlays baked in, and its alpha had been normalised into a 300px-wide soft haze (927k semi pixels, 8k isolated specks) that read as grey dust around the silhouette. v3 removes every small isolated high-saturation/near-white speck (Telea inpaint), rebuilds alpha from the binary silhouette (largest component + hole fill + 1px inner feather) and recolours washed-out edge pixels from the nearest solid pixel. 7,780 semi pixels remain, all within 2px of the edge.
+  - `look-3-trench-v2.webp` and the legacy `look-3-trench.webp` are kept only because the dev-only signature labs still reference them.
   - Image heights stay in `lvh` (`108/115/128lvh`) so the photo is never resized by dynamic viewport chrome.
   - Transition: pure 1.4s opacity-only crossfade (no scale/blur jumps).
 - **Content Stream (`App.tsx`)**:

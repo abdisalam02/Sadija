@@ -152,7 +152,7 @@ const FooterLab: React.FC = () => {
               <div className="relative mt-5 overflow-hidden rounded-xl border border-black/10 bg-[#fcfbf8]">
                 <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 lg:block">
                   <img
-                    src="./img/look-3-trench-v2.webp"
+                    src="./img/look-3-trench-v3.webp"
                     alt=""
                     className="h-full w-full object-cover object-[58%_16%]"
                   />
@@ -160,7 +160,7 @@ const FooterLab: React.FC = () => {
                 </div>
 
                 <img
-                  src="./img/look-3-trench-v2.webp"
+                  src="./img/look-3-trench-v3.webp"
                   alt=""
                   className="pointer-events-none absolute -right-10 bottom-0 h-[85%] w-auto opacity-[0.07] lg:hidden"
                 />
