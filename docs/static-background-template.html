@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Static mobile background — minimal pattern</title>
+    <style>
+      /* 1. The document never scrolls. */
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+        background: #fcfbf8;
+        font-family: system-ui, sans-serif;
+        color: #141518;
+      }
+
+      /* 2. Viewport-locked shell. */
+      .app-shell {
+        position: relative;
+        height: 100dvh;
+        overflow: hidden;
+      }
+
+      /* 3. The background lives OUTSIDE the scroller, is absolute, and uses
+            lvh (not vh/dvh) so browser chrome cannot resize/move it. */
+      .stage {
+        position: absolute;
+        inset: 0;
+        height: 100lvh;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(circle at 30% 20%, #d8d1c7 0 18%, transparent 18.5%),
+          radial-gradient(circle at 75% 65%, #b8aea0 0 28%, transparent 28.5%),
+          #efece5;
+      }
+
+      .stage img {
+        width: 100%;
+        height: 120lvh;
+        object-fit: cover;
+        /* No position: fixed, no transform, no parallax. */
+      }
+
+      /* 4. The only scrolling element. */
+      .scroll-area {
+        position: relative;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        z-index: 1;
+      }
+
+      .content {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: max(44svh, 5rem) 1.25rem 6rem;
+      }
+
+      .card {
+        margin: 1rem 0;
+        padding: 1.25rem;
+        border-radius: 1.25rem;
+        background: rgba(255, 255, 255, 0.62);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 16px 40px -24px rgba(0, 0, 0, 0.25);
+      }
+
+      h1 {
+        font-size: clamp(3rem, 12vw, 6rem);
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        margin: 0 0 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Background: a sibling of the scroller, not a child of it. -->
+      <div class="stage" aria-hidden="true">
+        <!-- Replace this with your artwork. The gradient above is a placeholder. -->
+        <!-- <img src="/your-background.jpg" alt="" /> -->
+      </div>
+
+      <!-- The only scrolling container. -->
+      <main class="scroll-area">
+        <div class="content">
+          <h1>STATIC<br />STAGE</h1>
+          <p>
+            The document is locked. This column scrolls inside
+            <code>.scroll-area</code>; the stage behind it never moves, even
+            when mobile browser chrome shows or hides.
+          </p>
+
+          <div class="card">Scroll the content — the stage rect stays fixed.</div>
+          <div class="card">Use <code>100dvh</code> for the shell.</div>
+          <div class="card">Use <code>100lvh</code> for the background.</div>
+          <div class="card">No <code>background-attachment: fixed</code>.</div>
+          <div class="card">No <code>100vh</code> background heights.</div>
+          <div class="card">No JS scroll transforms on the stage.</div>
+          <div class="card">Scroll this area to the bottom.</div>
+          <div class="card">The artwork stays exactly where it started.</div>
+          <div class="card">Test with the URL bar shown and hidden.</div>
+          <div class="card">End of demo.</div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

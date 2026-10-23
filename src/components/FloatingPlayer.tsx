@@ -41,7 +41,7 @@ export const FloatingPlayer: React.FC = () => {
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 pointer-events-auto select-none"
         >
-          <div className="flex items-center gap-3 pl-3.5 pr-2 py-2 rounded-full bg-neutral-950/90 backdrop-blur-xl border border-white/20 text-white shadow-2xl">
+          <div className="flex items-center gap-3 pl-3.5 pr-2 py-2 rounded-full glass-frosted text-neutral-900">
             {activeSource === 'spotify' ? (
               <>
                 {/* Spotify Brand & Visualizer */}
@@ -51,10 +51,10 @@ export const FloatingPlayer: React.FC = () => {
 
                 {/* Track Info */}
                 <div className="max-w-[130px] sm:max-w-[180px] min-w-0 pr-1">
-                  <span className="text-[9px] font-mono uppercase tracking-wider font-semibold text-[#1ed760] block truncate">
+                  <span className="text-[9px] font-mono uppercase tracking-wider font-semibold text-emerald-700 block truncate">
                     Spotify Podcast
                   </span>
-                  <span className="text-[11px] font-syne font-bold text-white truncate block">
+                  <span className="text-[11px] font-syne font-bold text-neutral-900 truncate block">
                     {spotifyEpisode?.title || 'sadija.s podcast'}
                   </span>
                 </div>
@@ -64,7 +64,7 @@ export const FloatingPlayer: React.FC = () => {
                   type="button"
                   onClick={toggleSpotify}
                   aria-label={isSpotifyPlaying ? 'Pause Spotify' : 'Play Spotify'}
-                  className="w-8 h-8 rounded-full bg-white text-neutral-950 hover:bg-neutral-200 flex items-center justify-center transition-all active:scale-90 shadow-sm flex-shrink-0"
+                  className="w-8 h-8 rounded-full bg-neutral-950 text-white hover:bg-neutral-800 flex items-center justify-center transition-all active:scale-90 shadow-sm flex-shrink-0"
                 >
                   {isSpotifyPlaying ? (
                     <Pause className="w-3.5 h-3.5 fill-current" />
@@ -76,16 +76,16 @@ export const FloatingPlayer: React.FC = () => {
             ) : (
               <>
                 {/* YouTube Brand Icon */}
-                <div className="w-7 h-7 rounded-full bg-red-600/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-red-600/15 flex items-center justify-center flex-shrink-0">
                   <YouTubeIcon />
                 </div>
 
                 {/* Video Info */}
                 <div className="max-w-[130px] sm:max-w-[180px] min-w-0 pr-1">
-                  <span className="text-[9px] font-mono uppercase tracking-wider font-semibold text-red-400 block truncate">
+                  <span className="text-[9px] font-mono uppercase tracking-wider font-semibold text-red-600 block truncate">
                     YouTube Video
                   </span>
-                  <span className="text-[11px] font-syne font-bold text-white truncate block">
+                  <span className="text-[11px] font-syne font-bold text-neutral-900 truncate block">
                     {youtubeTitle}
                   </span>
                 </div>
@@ -95,7 +95,7 @@ export const FloatingPlayer: React.FC = () => {
                   type="button"
                   onClick={toggleYouTubePlay}
                   aria-label={isYouTubePlaying ? 'Pause YouTube Video' : 'Play YouTube Video'}
-                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all active:scale-90 flex-shrink-0"
+                  className="w-7 h-7 rounded-full bg-neutral-900/10 hover:bg-neutral-900/15 text-neutral-900 flex items-center justify-center transition-all active:scale-90 flex-shrink-0"
                 >
                   {isYouTubePlaying ? (
                     <Pause className="w-3 h-3 fill-current" />
@@ -109,12 +109,12 @@ export const FloatingPlayer: React.FC = () => {
                   type="button"
                   onClick={toggleYouTubeAudio}
                   aria-label={isYouTubeMuted ? 'Turn Audio On' : 'Mute Audio'}
-                  className="w-8 h-8 rounded-full bg-white text-neutral-950 hover:bg-neutral-200 flex items-center justify-center transition-all active:scale-90 shadow-sm flex-shrink-0"
+                  className="w-8 h-8 rounded-full bg-neutral-950 text-white hover:bg-neutral-800 flex items-center justify-center transition-all active:scale-90 shadow-sm flex-shrink-0"
                 >
                   {isYouTubeMuted ? (
-                    <VolumeX className="w-3.5 h-3.5 text-neutral-900" />
+                    <VolumeX className="w-3.5 h-3.5 text-white" />
                   ) : (
-                    <Volume2 className="w-3.5 h-3.5 text-neutral-900" />
+                    <Volume2 className="w-3.5 h-3.5 text-white" />
                   )}
                 </button>
               </>

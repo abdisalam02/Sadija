@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, Copy, Check, Briefcase, ArrowUpRight } from 'lucide-react';
+import React from 'react';
+import { Mail, Briefcase, ArrowUpRight } from 'lucide-react';
 
 interface BusinessCollabsProps {
   email: string;
@@ -10,14 +10,6 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
   email,
   inquiryNotice,
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyEmail = async () => {
-    await navigator.clipboard.writeText(email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="w-full grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:gap-x-12 xl:gap-y-6 xl:items-end select-none">
       {/* Unboxed Minimal Header */}
@@ -37,35 +29,16 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
         {inquiryNotice}
       </p>
 
-      {/* Clean Unboxed Interactive Actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 xl:flex-col xl:items-stretch xl:justify-end xl:gap-2 xl:pt-0">
-        {/* Black Glass Card specifically for the Gmail */}
+      {/* Direct email — clear frosted glass, no secondary copy card */}
+      <div className="flex flex-col items-stretch pt-1 xl:justify-end xl:pt-0">
         <a
           href={`mailto:${email}?subject=Collaboration%20Inquiry%20—%20Sadija`}
-          className="py-3.5 px-6 rounded-full bg-neutral-950/90 hover:bg-black backdrop-blur-md border border-white/15 text-white font-syne font-bold text-xs tracking-wider transition-all text-center flex items-center justify-center gap-2.5 shadow-lg active:scale-[0.98]"
+          className="group py-3.5 px-6 xl:px-4 rounded-full glass-frosted hover:bg-white/70 text-neutral-900 font-syne font-bold text-xs tracking-wider transition-all text-center flex items-center justify-center gap-2.5 active:scale-[0.98]"
         >
-          <Mail className="w-4 h-4 text-white/80" />
-          <span>{email}</span>
-          <ArrowUpRight className="w-4 h-4 text-white/70" />
+          <Mail className="w-4 h-4 text-neutral-700" />
+          <span className="truncate">{email}</span>
+          <ArrowUpRight className="w-4 h-4 text-neutral-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </a>
-
-        <button
-          onClick={handleCopyEmail}
-          aria-label="Copy booking email"
-          className="py-3.5 px-6 rounded-full border border-neutral-300/80 bg-white/85 hover:bg-white text-neutral-900 text-xs font-semibold tracking-wide transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
-        >
-          {copied ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-600" />
-              <span className="text-emerald-700 font-medium">Copied Email</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-4 h-4 text-neutral-500" />
-              <span>Copy</span>
-            </>
-          )}
-        </button>
       </div>
     </div>
   );

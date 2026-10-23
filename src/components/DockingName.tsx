@@ -31,6 +31,7 @@ interface DockingNameProps {
   onReady?: () => void;
   navOffset?: number;
   navY?: MotionValue<number>;
+  mobile?: boolean;
   startColor?: string;
   startShadow?: string;
   mode?: DockMode;
@@ -98,6 +99,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
   onReady,
   navOffset = 20,
   navY,
+  mobile = false,
   startColor = '#3d3d3d',
   startShadow = '0 0 0 rgba(0,0,0,0)',
   mode = 'A',
@@ -186,7 +188,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
   };
 
   if (mode === 'E') return null;
-  if (mode === 'D') return <DockD {...shared} />;
+  if (mode === 'D') return <DockD {...shared} mobile={mobile} />;
   if (mode === 'B') return <DockTimed {...shared} mode="B" zone={110} colorMode="mixed" spring={B_SPRING} />;
   if (mode === 'C') return <DockTimed {...shared} mode="C" zone={20} colorMode="mixed" spring={C_SPRING} />;
   return <DockA {...shared} />;
@@ -377,12 +379,25 @@ const DockTimed: React.FC<
 
 /* ── D — native CSS scroll-driven animation ─────────────────────────────── */
 
-const DockD: React.FC<DockVariantProps> = (props) => {
-  const { geometry, ready, startColor, startShadow } = props;
+const DockD: React.FC<DockVariantProps & { mobile?: boolean }> = (props) => {
+  const { geometry, ready, startColor, startShadow, mobile } = props;
 
   const supported =
     typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline: scroll()');
-  if (!supported) return <DockDScrub {...props} />;
+  // Mobile gets the JS version even where the native timeline exists: some
+  // mobile compositors step the scroll timeline, which makes the scale look
+  // like it teleports. DockDScrub adds a tight spring to the size only.
+  if (mobile || !supported) {
+    return (
+      <DockDScrub
+        geometry={geometry}
+        scrollY={props.scrollY}
+        ready={ready}
+        startColor={startColor}
+        startShadow={startShadow}
+      />
+    );
+  }
   if (!ready) return null;
 
   const vars = {
@@ -429,7 +444,16 @@ const DockDScrub: React.FC<DockVariantProps> = ({
   startShadow,
 }) => {
   const distance = geometry.distance;
-  const progress = useTransform(scrollY, (value) => clamp01(value / distance));
+  const rawProgress = useTransform(scrollY, (value) => clamp01(value / distance));
+  // Position stays locked to the scroll (no A-style trailing). Only the
+  // horizontal travel and size are interpolated, so touch-scroll steps and
+  // coarse scroll timelines cannot make the scale visibly jump.
+  const progress = useSpring(rawProgress, {
+    stiffness: 900,
+    damping: 32,
+    mass: 0.18,
+    restDelta: 0.0005,
+  });
   const x = useTransform(
     progress,
     [0, 1],

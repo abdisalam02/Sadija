@@ -197,6 +197,7 @@ export function App() {
             onReady={handleNameReady}
             navOffset={NAV_DROP}
             navY={navY}
+            mobile={!isDesktop}
             startColor={isDesktop ? '#3d3d3d' : '#ffffff'}
             startShadow={
               isDesktop ? '0 0 0 rgba(0,0,0,0)' : '0 2px 18px rgba(20,21,24,0.35)'
@@ -208,6 +209,7 @@ export function App() {
         {/* 2. STATIC VISUAL STAGE (outside the scroll area, so it can never move with the page) */}
         <aside
           aria-label="Sadija Visual Stage"
+          data-static-stage
           className="absolute top-0 left-0 w-full lg:w-[50vw] h-[100lvh] z-20 pointer-events-none"
         >
           <EditorialStage

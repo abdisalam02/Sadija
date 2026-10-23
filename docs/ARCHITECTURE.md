@@ -23,13 +23,15 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
   - `useScroll` uses `container: scrollRef` (the window never scrolls).
   - Sections are normal editorial flow (not sticky) to match the shipped layout.
 
+**Mobile static-background audit:** the full pattern, height-unit rules, audit measurements and a copyable minimal example are in [`docs/MOBILE_STATIC_BACKGROUND.md`](./MOBILE_STATIC_BACKGROUND.md).
+
 ### 1b. Hero Name Dock (`DockingName.tsx`)
 - A fixed, aria-hidden clone of `#hero-name-text` is measured against `#nav-brand`; the real `<h1>` stays in flow (and is hidden once the clone is ready). The header nav reveals on a scroll range and the clone hands off to the nav brand.
 - Five modes, selected with `?dock=a` … `?dock=e`; the default is **D** (`src/config/animationConfig.ts`):
   - **A** — one continuous `useSpring` on `scrollY` drives x/y/scale/colour together (glides on flings).
   - **B** — follows the page at full size, then a time-based spring docks it over the last ~110px.
   - **C** — stays full size until just below the nav (~20px), then collapses into it.
-  - **D** — native CSS scroll-driven animation on the `#app-scroll` timeline (`#app-shell` sets `timeline-scope`). Chromium runs it on the compositor; other browsers get `DockDScrub`, the same linear scrub driven from the scroll MotionValue, so the look is consistent everywhere.
+  - **D** — native CSS scroll-driven animation on the `#app-scroll` timeline (`#app-shell` sets `timeline-scope`) on desktop. Mobile (and browsers without scroll timelines) use `DockDScrub`: the same linear track, but with a tight spring on x/scale only — y stays locked to scroll, so touch-scroll steps cannot make the size visibly jump.
   - **E** — no clone: the in-flow name darkens/fades as the nav brand fades in (pure crossfade).
 - The mobile hero text-shadow fades out with the dock (58–92% of the range) so the wordmark is clean once it reaches the nav; there is no glow behind the final nav brand.
 - Mobile nav reveal is mode-aware so an empty pill never floats ahead of the brand (B: 255–355, E: 240–350, A/C/D: 355–440).
