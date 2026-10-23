@@ -158,6 +158,10 @@ export function App() {
           name={clientProfile.name}
           onReady={handleNameReady}
           navOffset={NAV_DROP}
+          startColor={isDesktop ? '#3d3d3d' : '#ffffff'}
+          startShadow={
+            isDesktop ? '0 0 0 rgba(0,0,0,0)' : '0 2px 18px rgba(20,21,24,0.35)'
+          }
         />
 
         {/* 2. STATIC VISUAL STAGE (outside the scroll area, so it can never move with the page) */}
@@ -203,7 +207,7 @@ export function App() {
                 <h1
                   id="client-name-title"
                   style={{ opacity: nameDocked ? 0 : 1 }}
-                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-[#3d3d3d]"
+                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-white lg:text-[#3d3d3d] drop-shadow-[0_2px_18px_rgba(20,21,24,0.35)] lg:drop-shadow-none"
                 >
                   <span id="hero-name-text">SADIJA</span>
                 </h1>

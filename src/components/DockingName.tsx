@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { motion, MotionValue, useTransform } from 'framer-motion';
+import { motion, MotionValue, useSpring, useTransform } from 'framer-motion';
 
 interface DockGeometry {
   name: string;
@@ -23,6 +23,8 @@ interface DockingNameProps {
   name: string;
   onReady?: () => void;
   navOffset?: number;
+  startColor?: string;
+  startShadow?: string;
 }
 
 /**
@@ -30,7 +32,14 @@ interface DockingNameProps {
  * scrolls. The original h1 stays in the flow for accessibility/layout; this
  * clone is the visible name from the hero all the way into the nav.
  */
-export const DockingName: React.FC<DockingNameProps> = ({ scrollY, name, onReady, navOffset = 20 }) => {
+export const DockingName: React.FC<DockingNameProps> = ({
+  scrollY,
+  name,
+  onReady,
+  navOffset = 20,
+  startColor = '#3d3d3d',
+  startShadow = '0 0 0 rgba(0,0,0,0)',
+}) => {
   const [geometry, setGeometry] = useState<DockGeometry | null>(null);
   const [measured, setMeasured] = useState(false);
 
@@ -103,25 +112,48 @@ export const DockingName: React.FC<DockingNameProps> = ({ scrollY, name, onReady
 
   if (!geometry) return null;
 
-  return <DockClone geometry={geometry} scrollY={scrollY} ready={measured} />;
+  return (
+    <DockClone
+      geometry={geometry}
+      scrollY={scrollY}
+      ready={measured}
+      startColor={startColor}
+      startShadow={startShadow}
+    />
+  );
 };
 
 const DockClone: React.FC<{
   geometry: DockGeometry;
   scrollY: MotionValue<number>;
   ready: boolean;
-}> = ({ geometry, scrollY, ready }) => {
+  startColor: string;
+  startShadow: string;
+}> = ({ geometry, scrollY, ready, startColor, startShadow }) => {
   const distance = geometry.distance;
-  const progress = (value: number) => Math.max(0, Math.min(1, value / distance));
-
-  const x = useTransform(scrollY, (value) => progress(value) * (geometry.targetLeft - geometry.startLeft));
-  const y = useTransform(scrollY, (value) => -Math.min(Math.max(value, 0), distance));
-  const scale = useTransform(scrollY, (value) => 1 + (geometry.scale - 1) * progress(value));
-  const color = useTransform(
-    scrollY,
-    [0, Math.max(180, distance * 0.8)],
-    ['#3d3d3d', '#141518']
+  const progress = useTransform(scrollY, (value) =>
+    Math.max(0, Math.min(1, value / distance))
   );
+  // A gentle spring on the scale/x keeps the shrink smooth, especially on
+  // touch momentum and when the scroll comes to rest frame by frame.
+  const smoothProgress = useSpring(progress, {
+    stiffness: 150,
+    damping: 28,
+    mass: 0.6,
+    restDelta: 0.001,
+  });
+
+  const x = useTransform(
+    smoothProgress,
+    [0, 1],
+    [0, geometry.targetLeft - geometry.startLeft]
+  );
+  const y = useTransform(scrollY, (value) => -Math.min(Math.max(value, 0), distance));
+  const scale = useTransform(smoothProgress, [0, 1], [1, geometry.scale]);
+
+  const colorStart = Math.max(8, distance * 0.15);
+  const colorEnd = Math.max(colorStart + 1, distance * 0.9);
+  const color = useTransform(scrollY, [colorStart, colorEnd], [startColor, '#141518']);
 
   if (!ready) return null;
 
@@ -137,6 +169,7 @@ const DockClone: React.FC<{
         y,
         scale,
         color,
+        textShadow: startShadow,
         fontSize: geometry.fontSize,
         fontWeight: geometry.fontWeight,
         letterSpacing: geometry.letterSpacing,
@@ -147,6 +180,10 @@ const DockClone: React.FC<{
         zIndex: 60,
         whiteSpace: 'nowrap',
         userSelect: 'none',
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        WebkitFontSmoothing: 'antialiased',
       }}
       className="font-syne uppercase"
     >
