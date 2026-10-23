@@ -11,6 +11,7 @@ import { Footer } from './components/Footer';
 import { FloatingPlayer } from './components/FloatingPlayer';
 import { DockingName } from './components/DockingName';
 import { DockLabSwitcher } from './components/DockLabSwitcher';
+import { TypeLab } from './components/TypeLab';
 import { MediaProvider } from './context/MediaContext';
 import { fetchLatestYouTubeVideo } from './utils/mediaFetcher';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
@@ -44,7 +45,6 @@ export function App() {
   }, []);
   const [socialRanges, setSocialRanges] = useState<Array<{ start: number; end: number }>>([]);
   const [isDesktop, setIsDesktop] = useState(false);
-  const NAV_DROP = 32;
 
   // Dock experiment: default from config, overridable with ?dock=a ... ?dock=e.
   const dockMode: DockMode = (() => {
@@ -61,6 +61,7 @@ export function App() {
   // nav brand as the header arrives, so there is no clone to track/dock.
   const isCrossfade = dockMode === 'E';
   const isDockLab = new URLSearchParams(window.location.search).get('lab') === 'dock';
+  const isTypeLab = new URLSearchParams(window.location.search).get('lab') === 'type';
 
   // Track viewport class for the nav's reveal timing (it comes down to meet the name).
   useEffect(() => {
@@ -155,8 +156,10 @@ export function App() {
       : dockMode === 'E'
         ? [240, 350]
         : [Math.max(0, navEnd - 90), navEnd];
-  const navOpacity = useTransform(scrollY, navRange, [0, 1]);
-  const navY = useTransform(scrollY, navRange, [-NAV_DROP, 0]);
+  // 0 = folded flat against the top edge (invisible), 1 = hanging in place.
+  // The header turns this into a hinge rotation, so the sheet drops out of the
+  // top of the viewport like a pane swinging down instead of sliding.
+  const navProgress = useTransform(scrollY, navRange, [0, 1]);
 
   // Crossfade (E): the in-flow hero name darkens and dissolves as the nav
   // arrives; the nav brand takes over in the same stretch of scroll.
@@ -192,8 +195,7 @@ export function App() {
         <Header
           name={clientProfile.name}
           socials={clientProfile.socials}
-          navOpacity={navOpacity}
-          navY={navY}
+          navProgress={navProgress}
           scrollY={scrollY}
           nameDocked={nameDocked}
           dockDistance={dockDistance}
@@ -206,8 +208,6 @@ export function App() {
             name={clientProfile.name}
             onReady={handleNameReady}
             onDistance={handleDockDistance}
-            navOffset={NAV_DROP}
-            navY={navY}
             mobile={!isDesktop}
             startColor={isDesktop ? '#3d3d3d' : '#ffffff'}
             startShadow={
@@ -263,6 +263,7 @@ export function App() {
                   style={{
                     opacity: isCrossfade ? heroNameOpacity : nameDocked ? 0 : 1,
                     color: isCrossfade ? heroNameColor : undefined,
+                    letterSpacing: 'var(--display-tracking)',
                   }}
                   className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-7xl xl:text-8xl 2xl:text-[7.5rem] tracking-tight leading-[0.88] uppercase select-none w-full text-white lg:text-[#3d3d3d] drop-shadow-[0_2px_18px_rgba(20,21,24,0.35)] lg:drop-shadow-none"
                 >
@@ -352,6 +353,9 @@ export function App() {
 
         {/* Lab-only A–E switcher; normal visits never render this. */}
         {isDockLab && <DockLabSwitcher current={dockMode} />}
+
+        {/* Lab-only type audition (?lab=type). Re-skins the real page live. */}
+        {isTypeLab && <TypeLab />}
       </div>
     </MediaProvider>
   );

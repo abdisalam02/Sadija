@@ -38,11 +38,18 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
   - **E** — no clone: the in-flow name darkens/fades as the nav brand fades in (pure crossfade).
 - **D is compositor-only.** The clone is a `.dock-word` grid holding two `.dock-ink` copies of the name — the hero ink (white/soft shadow on mobile, `#3d3d3d` on desktop) and the nav ink (`#141518`, no shadow). Animating `color`/`text-shadow` forced Chrome to repaint the whole 564×96 wordmark every frame; crossfading the two copies with `opacity` is the identical blend but stays on the compositor. A scroll trace confirms **0 paint events on the wordmark** during travel. Never reintroduce `color`/`text-shadow` into `dock-css`.
 - The clone lands on the *line box* of `#nav-brand` (`targetTop` is corrected by line height, not ink height) and `#nav-brand` is `font-extrabold` so the clone's 82.4px landed width matches the brand's box exactly. Because the landed clone is a 96px raster downscaled ~6.9×, it dissolves into the crisp real brand over the **10px after** the dock (same position, no ghost, no grey dip).
-- `onDistance` reports the measured travel back to `App.tsx`, and `navRange` is derived from it, so the nav finishes arriving on the same scroll pixel the name lands on (desktop 62px, mobile 381px).
-- Mobile nav reveal is mode-aware so an empty pill never floats ahead of the brand (B: 255–355, E: 240–350, A/C/D: `[distance − 90, distance]`).
+- `onDistance` reports the measured travel back to `App.tsx`, and `navRange` is derived from it, so the nav finishes arriving on the same scroll pixel the name lands on (desktop 75px, mobile ~392px).
+- The clone's resting target is measured with the header's transform temporarily neutralised (`style.transform = 'none'`), so the dock no longer needs to know how the nav animates. Any future nav motion stays safe.
+- Mobile nav reveal is mode-aware so an empty sheet never floats ahead of the brand (B: 255–355, E: 240–350, A/C/D: `[distance − 90, distance]`).
 - Lab-only comparison: `?lab=dock` opens the real page with a small Dock switcher in the bottom-left.
 
-### 1c. Desktop Layout
+### 1c. Top-Hung Nav Sheet (`Header.tsx`)
+- The nav is a **tab attached to the viewport's top edge**, not a floating pill: `fixed top-0`, square top corners, `rounded-b-[26px]`, `border-t-0`, `bg-white/90` + `backdrop-blur-xl`. Top padding is `calc(10px + env(safe-area-inset-top))` so the glass still reaches the edge on notched phones.
+- **Reveal = hinge fold, not a slide.** `navProgress` (0→1 over `navRange`) is eased by `easeDrape` (a `p²` fall plus a 5.5% settle bump) and mapped to `rotateX(-88deg → 0)` with `transformPerspective: 1400` and `transformOrigin: top center`. At 0 the sheet lies flat in the ceiling plane, so it is edge-on and invisible; it then tips down and hangs. `opacity` ramps 0→1 over the first 8% only to kill the 1px sliver.
+- The fold is **scroll-linked, never time-based**, so it cannot lag behind the finger. Only `transform` + `opacity` animate.
+- Nav social icons use `useScrollReveal` — a threshold + spring, not a scrubbed opacity. Scrubbing meant a fast flick snapped every icon on in one frame; now they cascade (`delay = 0.08 + index × 0.09`) even if the scroll jumped. Hysteresis (`start − 120`) stops flicker at the boundary, and hidden icons are `pointer-events: none`.
+
+### 1d. Desktop Layout
 - The right column is capped at `860px` (`1040px` at 2xl) so cards stop stretching on ultrawide screens.
 - Hero socials become a 3-up card grid at `xl` (stacked below that); each card puts the icon top, label/subtitle bottom, arrow top-right.
 - Spotify becomes a full-width podcast panel at `lg` (single episode column; two columns at `2xl`).
@@ -85,6 +92,14 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
 - Live footer is the original translucent social row + colophon, still inside the content column over the page background. "Back to Top" scrolls `#app-scroll`.
 - The oversized A.Gure sign-off was reverted — it competed with the site's imagery and glass surfaces. A final small credit is pending a direction.
 - Preview-only labs (not linked from the site; they re-enable document scrolling with `useUnlockDocumentScroll`):
-  - `?lab=footer` — five quiet colophon placements (bracket line, signature, monogram, glass pill, hover reveal).
-  - `?lab=signature` — twelve distinct signature studies: atelier seal, ink signature, split-flap token, scramble decoder, magnetic monogram, dot-matrix receipt, woven garment label, barcode hang tag, printer's registration mark, embossed seal, photo-filled type, ticket stub.
+  - `?lab=footer` - five quiet colophon placements (bracket line, signature, monogram, glass pill, hover reveal).
+  - `?lab=signature` - twelve distinct signature studies: atelier seal, ink signature, split-flap token, scramble decoder, magnetic monogram, dot-matrix receipt, woven garment label, barcode hang tag, printer's registration mark, embossed seal, photo-filled type, ticket stub.
   - Both labs include hover/click previews and reference links (Awwwards, Codrops, Fancy Components, HotFX, textmode.js, Dribbble).
+
+### 6. Type Lab (`?lab=type`)
+- Fonts are declared in exactly three CSS variables in `src/index.css`: `--font-display`, `--font-body`, `--font-signature`, plus `--display-tracking` for the monumental wordmark. `tailwind.config.js` maps `font-syne` → `var(--font-display, "Syne", sans-serif)` and `font-sans` → `var(--font-body, …)`, and `body` uses `var(--font-body)`.
+- Because every component already uses those utilities, the lab only has to rewrite the variables — the real page (dock, nav, cards, footer) re-typesets live. No component knows the lab exists.
+- `?lab=type` opens a bottom-left panel (`src/components/TypeLab.tsx`) listing the pairings in `src/config/typeOptions.ts`: Syne×Jakarta, Bodoni Moda×Inter, Playfair×Manrope, Fraunces×Schibsted, Archivo×Archivo, Unbounded×Figtree, Bricolage×Instrument, Schibsted×Schibsted.
+- Only the lab loads the extra families (one Google Fonts request, injected on mount). Keys `1`–`8` flip pairings; the choice persists in `localStorage` and in `?font=<id>`; `Reset` returns to Syne.
+- After a swap the lab dispatches a `resize` event (and again once `document.fonts.load()` resolves), which is how `DockingName` and the hero social ranges re-measure. A new display face changes the wordmark width, so this re-fit is required — without it the clone would land at the wrong size.
+- `--display-tracking` is applied to both `#client-name-title` and `#nav-brand`, so the clone's letter-spacing scales proportionally into the nav and the landed width still matches exactly.

@@ -31,8 +31,6 @@ interface DockingNameProps {
   onReady?: () => void;
   /** Reports the measured travel so the nav can finish arriving exactly when the name lands. */
   onDistance?: (distance: number) => void;
-  navOffset?: number;
-  navY?: MotionValue<number>;
   mobile?: boolean;
   startColor?: string;
   startShadow?: string;
@@ -80,8 +78,6 @@ export const DockingName: React.FC<DockingNameProps> = ({
   name,
   onReady,
   onDistance,
-  navOffset = 20,
-  navY,
   mobile = false,
   startColor = '#3d3d3d',
   startShadow = '0 0 0 rgba(0,0,0,0)',
@@ -99,7 +95,14 @@ export const DockingName: React.FC<DockingNameProps> = ({
     if (!text || !heading || !navBrand) return;
 
     const textRect = text.getBoundingClientRect();
+    // The nav is hinged/transformed while it is folded away, so its live rect
+    // is not where the brand will sit. Measure with the header's transform
+    // neutralised to get the true resting box, whatever the nav animation does.
+    const header = navBrand.closest('header') as HTMLElement | null;
+    const previousTransform = header?.style.transform;
+    if (header) header.style.transform = 'none';
     const brandRect = navBrand.getBoundingClientRect();
+    if (header && previousTransform !== undefined) header.style.transform = previousTransform;
     if (textRect.width <= 0 || brandRect.width <= 0) return;
 
     const scrollTop = scroller?.scrollTop ?? window.scrollY;
@@ -110,17 +113,12 @@ export const DockingName: React.FC<DockingNameProps> = ({
     const scale = brandFontSize / heroFontSize;
 
     const startTop = textRect.top + scrollTop;
-    // The header is translated by navY while it is hidden. Measure the
-    // undocked brand position (navY = 0) so the target stays correct even if
-    // the user has already scrolled when the measurement runs.
-    const currentNavY = navY ? navY.get() : -navOffset;
-    const brandTopAtRest = brandRect.top - currentNavY;
     // Centre the clone's *line box* (not the font's ink box) inside the brand's
     // line box, otherwise the scaled wordmark lands ~1.5px above the brand and
     // the hand-off at the end of the dock shows a visible nudge.
     const heroLineHeight = parseFloat(computed.lineHeight) || heroFontSize;
     const cloneLineHeight = heroLineHeight * scale;
-    const targetTop = brandTopAtRest + (brandRect.height - cloneLineHeight) / 2;
+    const targetTop = brandRect.top + (brandRect.height - cloneLineHeight) / 2;
 
     const distance = Math.max(60, startTop - targetTop);
 
@@ -143,7 +141,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
     setMeasured(true);
     onDistance?.(distance);
     onReady?.();
-  }, [name, navOffset, navY, onReady, onDistance]);
+  }, [name, onReady, onDistance]);
 
   useEffect(() => {
     let cancelled = false;

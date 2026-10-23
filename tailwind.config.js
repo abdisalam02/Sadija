@@ -7,8 +7,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        syne: ['"Syne"', 'sans-serif'],
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        // Driven by CSS variables so the type lab can re-skin the whole page
+        // live. The fallbacks are what production ships with.
+        syne: ['var(--font-display, "Syne", sans-serif)'],
+        sans: ['var(--font-body, "Plus Jakarta Sans", system-ui, sans-serif)'],
       },
       colors: {
         cream: {
