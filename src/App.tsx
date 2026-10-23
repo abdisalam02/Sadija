@@ -11,7 +11,6 @@ import { Footer } from './components/Footer';
 import { FloatingPlayer } from './components/FloatingPlayer';
 import { DockingName } from './components/DockingName';
 import { DockLabSwitcher } from './components/DockLabSwitcher';
-import { TypeLab } from './components/TypeLab';
 import { MediaProvider } from './context/MediaContext';
 import { fetchLatestYouTubeVideo } from './utils/mediaFetcher';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
@@ -61,7 +60,6 @@ export function App() {
   // nav brand as the header arrives, so there is no clone to track/dock.
   const isCrossfade = dockMode === 'E';
   const isDockLab = new URLSearchParams(window.location.search).get('lab') === 'dock';
-  const isTypeLab = new URLSearchParams(window.location.search).get('lab') === 'type';
 
   // Track viewport class for the nav's reveal timing (it comes down to meet the name).
   useEffect(() => {
@@ -353,9 +351,6 @@ export function App() {
 
         {/* Lab-only A–E switcher; normal visits never render this. */}
         {isDockLab && <DockLabSwitcher current={dockMode} />}
-
-        {/* Lab-only type audition (?lab=type). Re-skins the real page live. */}
-        {isTypeLab && <TypeLab />}
       </div>
     </MediaProvider>
   );
