@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, MotionValue } from 'framer-motion';
+import { motion, MotionValue, useTransform } from 'framer-motion';
 import { Instagram, Youtube, Mail, ArrowUpRight, Check } from 'lucide-react';
 import { SocialLink } from '../types';
 
@@ -8,6 +8,8 @@ interface HeaderProps {
   socials: SocialLink[];
   navOpacity: MotionValue<number>;
   navY: MotionValue<number>;
+  scrollY: MotionValue<number>;
+  nameDocked: boolean;
 }
 
 // Custom crisp TikTok SVG
@@ -17,13 +19,58 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' })
   </svg>
 );
 
+const getIcon = (platform: SocialLink['platform']) => {
+  switch (platform) {
+    case 'instagram':
+      return <Instagram className="w-4 h-4 text-neutral-800" />;
+    case 'tiktok':
+      return <TikTokIcon className="w-4 h-4 text-neutral-800" />;
+    case 'youtube':
+      return <Youtube className="w-4 h-4 text-neutral-800" />;
+    case 'email':
+      return <Mail className="w-4 h-4 text-neutral-800" />;
+  }
+};
+
+/** Each social icon arrives slightly after the previous one as the nav builds. */
+const NavSocialIcon: React.FC<{
+  link: SocialLink;
+  index: number;
+  scrollY: MotionValue<number>;
+}> = ({ link, index, scrollY }) => {
+  const start = 200 + index * 34;
+  const opacity = useTransform(scrollY, [start, start + 90], [0, 1]);
+  const y = useTransform(scrollY, [start, start + 90], [10, 0]);
+  const scale = useTransform(scrollY, [start, start + 90], [0.8, 1]);
+
+  return (
+    <motion.a
+      href={link.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={link.label}
+      style={{ opacity, y, scale }}
+      className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors text-neutral-700"
+    >
+      {getIcon(link.platform)}
+    </motion.a>
+  );
+};
+
 export const Header: React.FC<HeaderProps> = ({
   name,
   socials,
   navOpacity,
   navY,
+  scrollY,
+  nameDocked,
 }) => {
   const [copied, setCopied] = useState(false);
+
+  const shareStart = 200 + socials.length * 34 + 18;
+  const shareOpacity = useTransform(scrollY, [shareStart, shareStart + 90], [0, 1]);
+  const shareY = useTransform(scrollY, [shareStart, shareStart + 90], [10, 0]);
+  const shareScale = useTransform(scrollY, [shareStart, shareStart + 90], [0.8, 1]);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -42,51 +89,38 @@ export const Header: React.FC<HeaderProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getIcon = (platform: SocialLink['platform']) => {
-    switch (platform) {
-      case 'instagram':
-        return <Instagram className="w-4 h-4 text-neutral-800" />;
-      case 'tiktok':
-        return <TikTokIcon className="w-4 h-4 text-neutral-800" />;
-      case 'youtube':
-        return <Youtube className="w-4 h-4 text-neutral-800" />;
-      case 'email':
-        return <Mail className="w-4 h-4 text-neutral-800" />;
-    }
-  };
-
   return (
     <motion.header
       style={{ opacity: navOpacity, y: navY }}
       className="fixed top-3 inset-x-0 z-50 flex justify-center px-4 pointer-events-none"
     >
       <div className="pointer-events-auto bg-white/80 backdrop-blur-md border border-neutral-200/80 rounded-full px-5 py-2.5 shadow-lg shadow-black/[0.04] flex items-center justify-between gap-6 max-w-lg w-full">
-        <span className="font-syne font-bold text-sm tracking-tight text-neutral-900 uppercase">
+        <span
+          id="nav-brand"
+          style={{ opacity: nameDocked ? 0 : 1 }}
+          className="font-syne font-bold text-sm tracking-tight text-neutral-900 uppercase"
+        >
           {name}
         </span>
 
-        {/* Neat Social Icons Floating Dock */}
+        {/* Neat Social Icons Floating Dock — each item docks in on scroll */}
         <div className="flex items-center gap-1.5">
-          {socials.map((link) => (
-            <a
-              key={link.id}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={link.label}
-              className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors text-neutral-700"
-            >
-              {getIcon(link.platform)}
-            </a>
+          {socials.map((link, index) => (
+            <NavSocialIcon key={link.id} link={link} index={index} scrollY={scrollY} />
           ))}
 
-          <button
+          <motion.button
             onClick={handleShare}
             aria-label="Share page"
+            style={{ opacity: shareOpacity, y: shareY, scale: shareScale }}
             className="ml-1 p-1.5 rounded-full hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900 transition-colors"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <ArrowUpRight className="w-4 h-4" />}
-          </button>
+            {copied ? (
+              <Check className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <ArrowUpRight className="w-4 h-4" />
+            )}
+          </motion.button>
         </div>
       </div>
     </motion.header>

@@ -116,7 +116,7 @@ export const SpotifyPlayer: React.FC = () => {
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-950 hover:bg-black text-white text-[10px] font-syne font-bold shadow-xs transition-all active:scale-95"
         >
-          <span>Open Show</span>
+          <span>Open</span>
           <ArrowUpRight className="w-3 h-3 text-neutral-300" />
         </a>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
 import { clientProfile } from './config/clientConfig';
 import { Header } from './components/Header';
@@ -9,6 +9,7 @@ import { SpotifyPlayer } from './components/SpotifyPlayer';
 import { BusinessCollabs } from './components/BusinessCollabs';
 import { Footer } from './components/Footer';
 import { FloatingPlayer } from './components/FloatingPlayer';
+import { DockingName } from './components/DockingName';
 import { MediaProvider } from './context/MediaContext';
 import { fetchLatestYouTubeVideo } from './utils/mediaFetcher';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
@@ -30,6 +31,8 @@ export function App() {
     return 0;
   });
   const containerRef = useRef<HTMLDivElement>(null);
+  const [nameDocked, setNameDocked] = useState(false);
+  const handleNameReady = useCallback(() => setNameDocked(true), []);
 
   // Dynamic YouTube state with automated background fetch
   const [youtubeVideo, setYoutubeVideo] = useState({
@@ -77,8 +80,12 @@ export function App() {
   });
 
   // Floating top navigation bar appears smoothly after passing hero threshold
-  const navOpacity = useTransform(scrollY, [260, 360], [0, 1]);
-  const navY = useTransform(scrollY, [260, 360], [-20, 0]);
+  const navOpacity = useTransform(scrollY, [200, 300], [0, 1]);
+  const navY = useTransform(scrollY, [200, 300], [-20, 0]);
+
+  // Hero social cards lift and dissolve while the nav icons assemble
+  const socialsOpacity = useTransform(scrollY, [0, 160], [1, 0]);
+  const socialsY = useTransform(scrollY, [0, 300], [0, -24]);
 
   // Synchronize Scroll Timing with the 3 Left-Side Images (perfect1 -> perfect3 -> perfect4)
   useMotionValueEvent(scrollYProgress, 'change', (latest) => {
@@ -103,6 +110,14 @@ export function App() {
           socials={clientProfile.socials}
           navOpacity={navOpacity}
           navY={navY}
+          scrollY={scrollY}
+          nameDocked={nameDocked}
+        />
+
+        <DockingName
+          scrollY={scrollY}
+          name={clientProfile.name}
+          onReady={handleNameReady}
         />
 
         {/* 2. STATIC VISUAL STAGE (outside the scroll area, so it can never move with the page) */}
@@ -140,22 +155,26 @@ export function App() {
                 className="space-y-6 pt-2 lg:pt-0 relative z-30"
               >
                 {/* Scandinavian metadata */}
-                <div className="flex items-center gap-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                <div className="flex items-center gap-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-neutral-900">
                   <span>{clientProfile.location}</span>
                 </div>
 
-                {/* Monumental Name in Pure White */}
+                {/* Monumental Name — the visible version docks into the nav */}
                 <h1
                   id="client-name-title"
-                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.75)]"
+                  style={{ opacity: nameDocked ? 0 : 1 }}
+                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-neutral-900"
                 >
-                  SADIJA
+                  <span id="hero-name-text">SADIJA</span>
                 </h1>
 
                 {/* Interleaved Fading Transparency Social Links */}
-                <div className="pt-2">
+                <motion.div
+                  style={{ opacity: socialsOpacity, y: socialsY }}
+                  className="pt-2"
+                >
                   <SocialLinks socials={clientProfile.socials} />
-                </div>
+                </motion.div>
               </motion.section>
 
               {/* SECTION 2: YOUTUBE BROADCAST (Clean Natural Flow, Unblocked Controls) */}
@@ -213,7 +232,6 @@ export function App() {
                 <BusinessCollabs
                   email={clientProfile.business.email}
                   inquiryNotice={clientProfile.business.inquiryNotice}
-                  management={clientProfile.business.management}
                 />
 
                 {/* Footer with direct social links */}

@@ -83,15 +83,34 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
         </button>
       </div>
 
-      {/* Colophon & Copyright */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 text-[11px] text-neutral-400">
+      {/* Colophon & Copyright + A.Gure signature */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 text-[11px] text-neutral-400">
         <div>
           <span>© {new Date().getFullYear()} {name}. </span>
           <span>Oslo, Norway.</span>
         </div>
-        <span className="font-mono text-[10px] tracking-wider uppercase text-neutral-400">
-          Editorial Digital Archive
-        </span>
+
+        <a
+          href="https://agure.space"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="A.Gure — agure.space"
+          className="group flex flex-col items-start gap-0.5 text-neutral-500 transition-colors duration-300 hover:text-neutral-900 sm:items-end"
+        >
+          <span className="font-signature text-[28px] leading-none">A. Gure</span>
+          <svg viewBox="0 0 150 10" className="h-2 w-[120px] overflow-visible text-neutral-400">
+            <path
+              d="M2 7 C 30 2, 52 9, 78 5 S 122 2, 148 6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="ink-underline"
+            />
+          </svg>
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-neutral-400">
+            agure.space ↗
+          </span>
+        </a>
       </div>
     </footer>
   );

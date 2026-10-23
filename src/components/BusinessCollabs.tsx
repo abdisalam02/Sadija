@@ -4,13 +4,11 @@ import { Mail, Copy, Check, Briefcase, ArrowUpRight } from 'lucide-react';
 interface BusinessCollabsProps {
   email: string;
   inquiryNotice: string;
-  management: string;
 }
 
 export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
   email,
   inquiryNotice,
-  management,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -23,7 +21,7 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
   return (
     <div className="w-full space-y-6 select-none">
       {/* Unboxed Minimal Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-neutral-900/10">
+      <div className="flex items-center pb-3 border-b border-neutral-900/10">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-neutral-900/10 flex items-center justify-center text-neutral-800">
             <Briefcase className="w-3.5 h-3.5" />
@@ -32,10 +30,6 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
             Work With Sadija
           </span>
         </div>
-
-        <span className="text-xs text-neutral-500 font-medium">
-          Bookings & Press
-        </span>
       </div>
 
       {/* Floating Description */}
@@ -72,12 +66,6 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
             </>
           )}
         </button>
-      </div>
-
-      {/* Minimal Agency Footer */}
-      <div className="pt-2 flex items-center justify-between text-xs text-neutral-500 border-t border-neutral-900/5">
-        <span>Media Kit available upon request</span>
-        <span>{management}</span>
       </div>
     </div>
   );
