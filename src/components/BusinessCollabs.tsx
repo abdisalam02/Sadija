@@ -19,9 +19,9 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
   };
 
   return (
-    <div className="w-full space-y-6 select-none">
+    <div className="w-full grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:gap-x-12 xl:gap-y-6 xl:items-end select-none">
       {/* Unboxed Minimal Header */}
-      <div className="flex items-center pb-3 border-b border-neutral-900/10">
+      <div className="flex items-center pb-3 border-b border-neutral-900/10 xl:col-span-2">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-neutral-900/10 flex items-center justify-center text-neutral-800">
             <Briefcase className="w-3.5 h-3.5" />
@@ -33,12 +33,12 @@ export const BusinessCollabs: React.FC<BusinessCollabsProps> = ({
       </div>
 
       {/* Floating Description */}
-      <p className="text-sm sm:text-base text-neutral-700 max-w-md leading-relaxed">
+      <p className="text-sm sm:text-base xl:text-lg text-neutral-700 max-w-md xl:max-w-none leading-relaxed">
         {inquiryNotice}
       </p>
 
       {/* Clean Unboxed Interactive Actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 xl:flex-col xl:items-stretch xl:justify-end xl:gap-2 xl:pt-0">
         {/* Black Glass Card specifically for the Gmail */}
         <a
           href={`mailto:${email}?subject=Collaboration%20Inquiry%20—%20Sadija`}

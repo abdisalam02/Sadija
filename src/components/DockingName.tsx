@@ -38,6 +38,50 @@ interface DockingNameProps {
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
 /**
+ * The mobile hero name carries a soft text-shadow for legibility over the
+ * photograph. Once it heads into the nav that shadow reads as a glow, so we
+ * scale the shadow (offset, blur and alpha) down to nothing as it docks.
+ */
+const SHADOW_RE =
+  /^(-?[\d.]+)(?:px)?\s+(-?[\d.]+)(?:px)?\s+(-?[\d.]+)(?:px)?\s+rgba?\(([^)]+)\)$/;
+
+const fadeShadow = (shadow: string, fade: number) => {
+  const match = shadow.match(SHADOW_RE);
+  if (!match) return shadow;
+
+  const amount = 1 - clamp01(fade);
+  const [x, y, blur] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const [r, g, b, a = 1] = match[4].split(',').map((part) => Number(part.trim()));
+
+  return `${x * amount}px ${y * amount}px ${blur * amount}px rgba(${r}, ${g}, ${b}, ${
+    a * amount
+  })`;
+};
+
+const parseHex = (color: string) => {
+  const match = color.trim().match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+  if (!match) return null;
+  const hex = match[1].length === 3 ? match[1].split('').map((c) => c + c).join('') : match[1];
+  return [
+    parseInt(hex.slice(0, 2), 16),
+    parseInt(hex.slice(2, 4), 16),
+    parseInt(hex.slice(4, 6), 16),
+  ];
+};
+
+/** Linear sRGB mix, matching what the native CSS keyframes do. */
+const mixColor = (from: string, to: string, t: number) => {
+  const a = parseHex(from);
+  const b = parseHex(to);
+  if (!a || !b) return from;
+  const mix = a.map((channel, index) => Math.round(channel + (b[index] - channel) * clamp01(t)));
+  return `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`;
+};
+
+const useFadingShadow = (progress: MotionValue<number>, shadow: string) =>
+  useTransform(progress, (value) => fadeShadow(shadow, (value - 0.58) / 0.34));
+
+/**
  * A fixed clone of the hero wordmark that docks into the nav as the page
  * scrolls. The original h1 stays in the flow for accessibility/layout.
  *
@@ -150,9 +194,9 @@ const DockWord: React.FC<{
   y: MotionValue<number>;
   scale: MotionValue<number>;
   color: MotionValue<string>;
-  startShadow: string;
+  textShadow: MotionValue<string>;
   mode: DockMode;
-}> = ({ geometry, x, y, scale, color, startShadow, mode }) => (
+}> = ({ geometry, x, y, scale, color, textShadow, mode }) => (
   <motion.span
     aria-hidden="true"
     data-docking-name
@@ -165,7 +209,7 @@ const DockWord: React.FC<{
       y,
       scale,
       color,
-      textShadow: startShadow,
+      textShadow,
       fontSize: geometry.fontSize,
       fontWeight: geometry.fontWeight,
       letterSpacing: geometry.letterSpacing,
@@ -227,6 +271,7 @@ const DockA: React.FC<DockVariantProps> = ({
   const colorStart = Math.max(8, distance * 0.15);
   const colorEnd = Math.max(colorStart + 1, distance * 0.9);
   const color = useTransform(smoothScroll, [colorStart, colorEnd], [startColor, '#141518']);
+  const textShadow = useFadingShadow(progress, startShadow);
 
   if (!ready) return null;
 
@@ -237,7 +282,7 @@ const DockA: React.FC<DockVariantProps> = ({
       y={y}
       scale={scale}
       color={color}
-      startShadow={startShadow}
+      textShadow={textShadow}
       mode="A"
     />
   );
@@ -307,6 +352,7 @@ const DockTimed: React.FC<
         : Math.max(clamp01((scroll - colorStart) / (colorEnd - colorStart)), dockValue)
   );
   const color = useTransform(colorMix, [0, 1], [startColor, '#141518']);
+  const textShadow = useFadingShadow(colorMix, startShadow);
 
   if (!ready) return null;
 
@@ -317,7 +363,7 @@ const DockTimed: React.FC<
       y={y}
       scale={scale}
       color={color}
-      startShadow={startShadow}
+      textShadow={textShadow}
       mode={mode}
     />
   );
@@ -330,7 +376,7 @@ const DockD: React.FC<DockVariantProps> = (props) => {
 
   const supported =
     typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline: scroll()');
-  if (!supported) return <DockA {...props} />;
+  if (!supported) return <DockDScrub {...props} />;
   if (!ready) return null;
 
   const vars = {
@@ -339,6 +385,7 @@ const DockD: React.FC<DockVariantProps> = (props) => {
     '--dock-y': `-${geometry.distance}px`,
     '--dock-scale': geometry.scale,
     '--dock-start-color': startColor,
+    '--dock-start-shadow': startShadow,
   } as React.CSSProperties;
 
   return (
@@ -356,10 +403,48 @@ const DockD: React.FC<DockVariantProps> = (props) => {
         letterSpacing: geometry.letterSpacing,
         lineHeight: geometry.lineHeight,
         fontFamily: geometry.fontFamily,
-        textShadow: startShadow,
       }}
     >
       {geometry.name}
     </span>
+  );
+};
+
+/**
+ * D without the native scroll timeline (Safari/Firefox): the exact same
+ * linear scrub, but driven from the scroll MotionValue. No spring, so there
+ * is no lag or bounce — it simply tracks the page like the compositor version.
+ */
+const DockDScrub: React.FC<DockVariantProps> = ({
+  geometry,
+  scrollY,
+  ready,
+  startColor,
+  startShadow,
+}) => {
+  const distance = geometry.distance;
+  const progress = useTransform(scrollY, (value) => clamp01(value / distance));
+  const x = useTransform(
+    progress,
+    [0, 1],
+    [0, geometry.targetLeft - geometry.startLeft]
+  );
+  const y = useTransform(scrollY, (value) => -Math.min(Math.max(value, 0), distance));
+  const scale = useTransform(progress, [0, 1], [1, geometry.scale]);
+  const color = useTransform(progress, (value) => mixColor(startColor, '#141518', value));
+  const textShadow = useFadingShadow(progress, startShadow);
+
+  if (!ready) return null;
+
+  return (
+    <DockWord
+      geometry={geometry}
+      x={x}
+      y={y}
+      scale={scale}
+      color={color}
+      textShadow={textShadow}
+      mode="D"
+    />
   );
 };

@@ -9,4 +9,4 @@ export type DockMode = 'A' | 'B' | 'C' | 'D' | 'E';
  *
  * Override for testing with ?dock=a ... ?dock=e without changing this default.
  */
-export const DEFAULT_DOCK_MODE: DockMode = 'A';
+export const DEFAULT_DOCK_MODE: DockMode = 'D';

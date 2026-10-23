@@ -78,10 +78,18 @@
   from {
     transform: translate(0, 0) scale(1);
     color: var(--dock-start-color);
+    text-shadow: var(--dock-start-shadow);
+  }
+  58% {
+    text-shadow: var(--dock-start-shadow);
+  }
+  92% {
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
   to {
     transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-scale));
     color: #141518;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 

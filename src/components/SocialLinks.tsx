@@ -65,17 +65,17 @@ const SocialRow: React.FC<{
         href={link.url}
         target="_blank"
         rel="noopener noreferrer"
-        className={`group flex items-center justify-between p-4 rounded-2xl backdrop-blur-md transition-all pointer-events-auto ${getGradientClasses(
+        className={`group relative flex items-center justify-between p-4 rounded-2xl backdrop-blur-md transition-all pointer-events-auto xl:flex-col xl:items-start xl:justify-between xl:gap-5 xl:min-h-[176px] xl:p-5 xl:rounded-3xl ${getGradientClasses(
           index
-        )} hover:scale-[1.01] hover:shadow-lg active:scale-[0.99]`}
+        )} hover:scale-[1.01] hover:shadow-lg active:scale-[0.99] xl:bg-gradient-to-b xl:from-white/95 xl:via-white/70 xl:to-white/30 xl:border xl:border-white/80`}
       >
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-white/85 shadow-sm flex items-center justify-center text-neutral-800 group-hover:scale-105 transition-transform">
+        <div className="flex items-center gap-3.5 xl:w-full xl:flex-col xl:items-start xl:gap-4">
+          <div className="w-11 h-11 rounded-xl bg-white/85 shadow-sm flex items-center justify-center text-neutral-800 group-hover:scale-105 transition-transform xl:w-12 xl:h-12">
             {getIcon(link.platform)}
           </div>
 
           <div className="text-left">
-            <span className="font-syne font-bold text-sm tracking-tight text-neutral-900 group-hover:text-black transition-colors block">
+            <span className="font-syne font-bold text-sm tracking-tight text-neutral-900 group-hover:text-black transition-colors block xl:text-base">
               {link.label}
             </span>
             <span className="text-xs text-neutral-600 block font-medium">
@@ -84,7 +84,7 @@ const SocialRow: React.FC<{
           </div>
         </div>
 
-        <div className="w-8 h-8 rounded-full bg-white/80 group-hover:bg-white shadow-sm flex items-center justify-center text-neutral-600 group-hover:text-neutral-900 transition-colors">
+        <div className="w-8 h-8 rounded-full bg-white/80 group-hover:bg-white shadow-sm flex items-center justify-center text-neutral-600 group-hover:text-neutral-900 transition-colors xl:absolute xl:right-5 xl:top-5">
           <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
         </div>
       </a>
@@ -94,7 +94,7 @@ const SocialRow: React.FC<{
 
 export const SocialLinks: React.FC<SocialLinksProps> = ({ socials, scrollRef }) => {
   return (
-    <div className="space-y-3.5 w-full relative">
+    <div className="space-y-3.5 w-full relative xl:grid xl:grid-cols-3 xl:gap-4 xl:space-y-0">
       {socials.map((link, index) => (
         <SocialRow key={link.id} link={link} index={index} scrollRef={scrollRef} />
       ))}

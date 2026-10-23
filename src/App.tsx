@@ -228,7 +228,7 @@ export function App() {
             <div className="hidden lg:block lg:w-[50vw] flex-shrink-0 pointer-events-none" />
 
             {/* Right Content Stream (Starts cleanly below model portrait on mobile) */}
-            <main className="w-full lg:w-[50vw] px-5 sm:px-10 lg:px-14 pt-[44svh] sm:pt-[48svh] lg:pt-16 pb-24 flex flex-col space-y-24 sm:space-y-32 relative z-30">
+            <main className="w-full lg:w-[50vw] lg:max-w-[860px] 2xl:max-w-[1040px] px-5 sm:px-10 lg:px-14 pt-[44svh] sm:pt-[48svh] lg:pt-16 pb-24 flex flex-col space-y-24 sm:space-y-32 relative z-30">
             
               {/* SECTION 1: HERO MASTHEAD & SOCIALS (Locked Crisp White High-Contrast Typography) */}
               <motion.section
@@ -250,13 +250,13 @@ export function App() {
                     opacity: isCrossfade ? heroNameOpacity : nameDocked ? 0 : 1,
                     color: isCrossfade ? heroNameColor : undefined,
                   }}
-                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-white lg:text-[#3d3d3d] drop-shadow-[0_2px_18px_rgba(20,21,24,0.35)] lg:drop-shadow-none"
+                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-7xl xl:text-8xl 2xl:text-[7.5rem] tracking-tight leading-[0.88] uppercase select-none w-full text-white lg:text-[#3d3d3d] drop-shadow-[0_2px_18px_rgba(20,21,24,0.35)] lg:drop-shadow-none"
                 >
                   <span id="hero-name-text">SADIJA</span>
                 </motion.h1>
 
                 {/* Each social row fades only when it reaches the nav */}
-                <div className="pt-2">
+                <div className="pt-2 lg:pt-4">
                   <SocialLinks socials={clientProfile.socials} scrollRef={scrollRef} />
                 </div>
               </motion.section>
@@ -290,9 +290,9 @@ export function App() {
                 viewport={{ once: true, amount: 0.05 }}
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                 aria-label="Spotify Music"
-                className="z-30 pt-16 pb-20 sm:pt-20 sm:pb-28 lg:pt-24 lg:pb-36 flex flex-col items-end w-full pointer-events-none"
+                className="z-30 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-20 lg:pb-24 w-full pointer-events-none"
               >
-                <div className="pointer-events-auto">
+                <div className="pointer-events-auto w-full">
                   <SpotifyPlayer />
                 </div>
               </motion.section>
@@ -300,7 +300,7 @@ export function App() {
               {/* VISUAL BREATHER: Dedicated breathing space showcasing Look 3 (Denim) before transitioning to Look 4 */}
               <div
                 aria-hidden="true"
-                className="h-28 sm:h-36 lg:h-48 w-full pointer-events-none"
+                className="h-20 sm:h-28 lg:h-36 w-full pointer-events-none"
               />
 
               {/* SECTION 4: UNBOXED DIRECT BOOKINGS & PRESS (Look 4 Fully Visible in Background) */}
