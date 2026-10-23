@@ -61,7 +61,8 @@
 }
 
 .group:hover .ink-underline,
-.group:focus-visible .ink-underline {
+.group:focus-visible .ink-underline,
+.ink-underline.ink-drawn {
   stroke-dashoffset: 0;
 }
 
@@ -129,4 +130,19 @@
   .ink-underline {
     stroke-dashoffset: 0;
   }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 8s linear infinite;
 }

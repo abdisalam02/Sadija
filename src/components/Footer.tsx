@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useInView } from 'framer-motion';
 import { ArrowUp, Instagram, Youtube, Mail } from 'lucide-react';
 import { SocialLink } from '../types';
 
@@ -16,6 +17,9 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' })
 );
 
 export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollToTop }) => {
+  const signatureRef = useRef<HTMLAnchorElement>(null);
+  const signatureInView = useInView(signatureRef, { once: true, amount: 0.5 });
+
   const scrollToTop = () => {
     if (onScrollToTop) {
       onScrollToTop();
@@ -91,6 +95,7 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
         </div>
 
         <a
+          ref={signatureRef}
           href="https://agure.space"
           target="_blank"
           rel="noopener noreferrer"
@@ -104,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
               fill="none"
               stroke="currentColor"
               strokeWidth="1"
-              className="ink-underline"
+              className={`ink-underline ${signatureInView ? 'ink-drawn' : ''}`}
             />
           </svg>
           <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-neutral-400">

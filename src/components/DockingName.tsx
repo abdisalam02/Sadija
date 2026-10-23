@@ -9,6 +9,7 @@ interface DockGeometry {
   startHeight: number;
   targetLeft: number;
   targetTop: number;
+  distance: number;
   scale: number;
   fontSize: number;
   fontWeight: number;
@@ -21,6 +22,7 @@ interface DockingNameProps {
   scrollY: MotionValue<number>;
   name: string;
   onReady?: () => void;
+  navOffset?: number;
 }
 
 /**
@@ -28,7 +30,7 @@ interface DockingNameProps {
  * scrolls. The original h1 stays in the flow for accessibility/layout; this
  * clone is the visible name from the hero all the way into the nav.
  */
-export const DockingName: React.FC<DockingNameProps> = ({ scrollY, name, onReady }) => {
+export const DockingName: React.FC<DockingNameProps> = ({ scrollY, name, onReady, navOffset = 20 }) => {
   const [geometry, setGeometry] = useState<DockGeometry | null>(null);
   const [measured, setMeasured] = useState(false);
 
@@ -51,15 +53,19 @@ export const DockingName: React.FC<DockingNameProps> = ({ scrollY, name, onReady
     const brandFontSize = parseFloat(brandComputed.fontSize) || 14;
     const scale = brandFontSize / heroFontSize;
 
+    const startTop = textRect.top + scrollTop;
+    // navY starts by navOffset; by the time the name docks the header is at y=0.
+    const targetTop = brandRect.top + navOffset + (brandRect.height - textRect.height * scale) / 2;
+
     setGeometry({
       name,
       startLeft: textRect.left,
-      startTop: textRect.top + scrollTop,
+      startTop,
       startWidth: textRect.width,
       startHeight: textRect.height,
       targetLeft: brandRect.left,
-      // navY starts at -20px; by the time the name docks the header is at y=0.
-      targetTop: brandRect.top + 20 + (brandRect.height - textRect.height * scale) / 2,
+      targetTop,
+      distance: Math.max(60, startTop - targetTop),
       scale,
       fontSize: heroFontSize,
       fontWeight: Number(computed.fontWeight) || 800,
@@ -69,7 +75,7 @@ export const DockingName: React.FC<DockingNameProps> = ({ scrollY, name, onReady
     });
     setMeasured(true);
     onReady?.();
-  }, [name, onReady]);
+  }, [name, navOffset, onReady]);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,16 +111,17 @@ const DockClone: React.FC<{
   scrollY: MotionValue<number>;
   ready: boolean;
 }> = ({ geometry, scrollY, ready }) => {
-  // Ease the travel out so the name clears the hero cards early, then settles.
-  const dock = useTransform(scrollY, (value) => {
-    const t = Math.max(0, Math.min(1, value / 300));
-    return 1 - Math.pow(1 - t, 3);
-  });
+  const distance = geometry.distance;
+  const progress = (value: number) => Math.max(0, Math.min(1, value / distance));
 
-  const x = useTransform(dock, [0, 1], [0, geometry.targetLeft - geometry.startLeft]);
-  const y = useTransform(dock, [0, 1], [0, geometry.targetTop - geometry.startTop]);
-  const scale = useTransform(dock, [0, 1], [1, geometry.scale]);
-  const color = useTransform(scrollY, [0, 240], ['#3d3d3d', '#141518']);
+  const x = useTransform(scrollY, (value) => progress(value) * (geometry.targetLeft - geometry.startLeft));
+  const y = useTransform(scrollY, (value) => -Math.min(Math.max(value, 0), distance));
+  const scale = useTransform(scrollY, (value) => 1 + (geometry.scale - 1) * progress(value));
+  const color = useTransform(
+    scrollY,
+    [0, Math.max(180, distance * 0.8)],
+    ['#3d3d3d', '#141518']
+  );
 
   if (!ready) return null;
 

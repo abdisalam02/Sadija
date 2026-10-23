@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowUpRight, Instagram, Youtube } from 'lucide-react';
 import { SocialLink } from '../types';
 
 interface SocialLinksProps {
   socials: SocialLink[];
+  scrollRef?: React.RefObject<HTMLElement | null>;
 }
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
@@ -12,67 +14,89 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' })
   </svg>
 );
 
-export const SocialLinks: React.FC<SocialLinksProps> = ({ socials }) => {
-  const getIcon = (platform: SocialLink['platform']) => {
-    switch (platform) {
-      case 'instagram':
-        return <Instagram className="w-5 h-5 text-neutral-800" />;
-      case 'tiktok':
-        return <TikTokIcon className="w-5 h-5 text-neutral-800" />;
-      case 'youtube':
-        return <Youtube className="w-5 h-5 text-neutral-800" />;
-      default:
-        return null;
-    }
-  };
+const getIcon = (platform: SocialLink['platform']) => {
+  switch (platform) {
+    case 'instagram':
+      return <Instagram className="w-5 h-5 text-neutral-800" />;
+    case 'tiktok':
+      return <TikTokIcon className="w-5 h-5 text-neutral-800" />;
+    case 'youtube':
+      return <Youtube className="w-5 h-5 text-neutral-800" />;
+    default:
+      return null;
+  }
+};
 
-  // Interleaving Z-index: Image (z-20) weaves through social stack
-  const getZIndex = (index: number) => {
-    return index % 2 === 0 ? 'z-30' : 'z-10';
-  };
+// Interleaving Z-index: Image (z-20) weaves through social stack
+const getZIndex = (index: number) => (index % 2 === 0 ? 'z-30' : 'z-10');
 
-  // Alternating fading transparency gradients:
-  // Even (0, 2 - Instagram, YouTube): Fades transparency to the right
-  // Odd (1 - TikTok): Fades transparency to the left (inverted)
-  const getGradientClasses = (index: number) => {
-    const isEven = index % 2 === 0;
-    return isEven
-      ? 'bg-gradient-to-r from-white/90 via-white/55 to-white/10 border-l border-t border-b border-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)]'
-      : 'bg-gradient-to-l from-white/90 via-white/55 to-white/10 border-r border-t border-b border-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)]';
-  };
+// Alternating fading transparency gradients
+const getGradientClasses = (index: number) => {
+  const isEven = index % 2 === 0;
+  return isEven
+    ? 'bg-gradient-to-r from-white/90 via-white/55 to-white/10 border-l border-t border-b border-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)]'
+    : 'bg-gradient-to-l from-white/90 via-white/55 to-white/10 border-r border-t border-b border-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)]';
+};
+
+const SocialRow: React.FC<{
+  link: SocialLink;
+  index: number;
+  scrollRef?: React.RefObject<HTMLElement | null>;
+}> = ({ link, index, scrollRef }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Fades only when this row actually reaches the nav area at the top.
+  const { scrollYProgress } = useScroll({
+    container: scrollRef,
+    target: ref,
+    offset: ['start 0.18', 'start 0.07'],
+  });
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.985]);
 
   return (
-    <div className="space-y-3.5 w-full relative">
-      {socials.map((link, idx) => (
-        <div key={link.id} className={`relative ${getZIndex(idx)}`}>
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`group flex items-center justify-between p-4 rounded-2xl backdrop-blur-md transition-all pointer-events-auto ${getGradientClasses(
-              idx
-            )} hover:scale-[1.01] hover:shadow-lg active:scale-[0.99]`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-white/85 shadow-sm flex items-center justify-center text-neutral-800 group-hover:scale-105 transition-transform">
-                {getIcon(link.platform)}
-              </div>
+    <motion.div
+      ref={ref}
+      data-hero-social={index}
+      style={{ opacity, scale }}
+      className={`relative ${getZIndex(index)}`}
+    >
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`group flex items-center justify-between p-4 rounded-2xl backdrop-blur-md transition-all pointer-events-auto ${getGradientClasses(
+          index
+        )} hover:scale-[1.01] hover:shadow-lg active:scale-[0.99]`}
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-white/85 shadow-sm flex items-center justify-center text-neutral-800 group-hover:scale-105 transition-transform">
+            {getIcon(link.platform)}
+          </div>
 
-              <div className="text-left">
-                <span className="font-syne font-bold text-sm tracking-tight text-neutral-900 group-hover:text-black transition-colors block">
-                  {link.label}
-                </span>
-                <span className="text-xs text-neutral-600 block font-medium">
-                  {link.followers || link.handle}
-                </span>
-              </div>
-            </div>
-
-            <div className="w-8 h-8 rounded-full bg-white/80 group-hover:bg-white shadow-sm flex items-center justify-center text-neutral-600 group-hover:text-neutral-900 transition-colors">
-              <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </div>
-          </a>
+          <div className="text-left">
+            <span className="font-syne font-bold text-sm tracking-tight text-neutral-900 group-hover:text-black transition-colors block">
+              {link.label}
+            </span>
+            <span className="text-xs text-neutral-600 block font-medium">
+              {link.followers || link.handle}
+            </span>
+          </div>
         </div>
+
+        <div className="w-8 h-8 rounded-full bg-white/80 group-hover:bg-white shadow-sm flex items-center justify-center text-neutral-600 group-hover:text-neutral-900 transition-colors">
+          <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+        </div>
+      </a>
+    </motion.div>
+  );
+};
+
+export const SocialLinks: React.FC<SocialLinksProps> = ({ socials, scrollRef }) => {
+  return (
+    <div className="space-y-3.5 w-full relative">
+      {socials.map((link, index) => (
+        <SocialRow key={link.id} link={link} index={index} scrollRef={scrollRef} />
       ))}
     </div>
   );

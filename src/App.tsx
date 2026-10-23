@@ -33,6 +33,46 @@ export function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [nameDocked, setNameDocked] = useState(false);
   const handleNameReady = useCallback(() => setNameDocked(true), []);
+  const [socialRanges, setSocialRanges] = useState<Array<{ start: number; end: number }>>([]);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const NAV_DROP = 32;
+
+  // Track viewport class for the nav's reveal timing (it comes down to meet the name).
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  // Measure each hero social card so its fade and its nav icon share one range.
+  useEffect(() => {
+    const measure = () => {
+      const scroller = scrollRef.current;
+      if (!scroller) return;
+      const height = scroller.clientHeight;
+      const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-social]'));
+
+      setSocialRanges(
+        rows.map((row) => {
+          const top = row.getBoundingClientRect().top + scroller.scrollTop;
+          const start = Math.max(0, top - height * 0.18);
+          const end = Math.max(start + 40, top - height * 0.07);
+          return { start, end };
+        })
+      );
+    };
+
+    const timers = [window.setTimeout(measure, 900), window.setTimeout(measure, 1800)];
+    window.addEventListener('resize', measure);
+    document.fonts?.ready.then(() => window.setTimeout(measure, 700));
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   // Dynamic YouTube state with automated background fetch
   const [youtubeVideo, setYoutubeVideo] = useState({
@@ -79,13 +119,11 @@ export function App() {
     offset: ['start start', 'end end'],
   });
 
-  // Floating top navigation bar appears smoothly after passing hero threshold
-  const navOpacity = useTransform(scrollY, [200, 300], [0, 1]);
-  const navY = useTransform(scrollY, [200, 300], [-20, 0]);
-
-  // Hero social cards lift and dissolve while the nav icons assemble
-  const socialsOpacity = useTransform(scrollY, [0, 160], [1, 0]);
-  const socialsY = useTransform(scrollY, [0, 300], [0, -24]);
+  // The nav descends to meet the name. On desktop the hero is close to the
+  // top so it reveals early; on mobile it waits until the name is nearly docked.
+  const navRange: [number, number] = isDesktop ? [0, 110] : [320, 430];
+  const navOpacity = useTransform(scrollY, navRange, [0, 1]);
+  const navY = useTransform(scrollY, navRange, [-NAV_DROP, 0]);
 
   // Synchronize Scroll Timing with the 3 Left-Side Images (perfect1 -> perfect3 -> perfect4)
   useMotionValueEvent(scrollYProgress, 'change', (latest) => {
@@ -112,12 +150,14 @@ export function App() {
           navY={navY}
           scrollY={scrollY}
           nameDocked={nameDocked}
+          socialRanges={socialRanges}
         />
 
         <DockingName
           scrollY={scrollY}
           name={clientProfile.name}
           onReady={handleNameReady}
+          navOffset={NAV_DROP}
         />
 
         {/* 2. STATIC VISUAL STAGE (outside the scroll area, so it can never move with the page) */}
@@ -168,13 +208,10 @@ export function App() {
                   <span id="hero-name-text">SADIJA</span>
                 </h1>
 
-                {/* Interleaved Fading Transparency Social Links */}
-                <motion.div
-                  style={{ opacity: socialsOpacity, y: socialsY }}
-                  className="pt-2"
-                >
-                  <SocialLinks socials={clientProfile.socials} />
-                </motion.div>
+                {/* Each social row fades only when it reaches the nav */}
+                <div className="pt-2">
+                  <SocialLinks socials={clientProfile.socials} scrollRef={scrollRef} />
+                </div>
               </motion.section>
 
               {/* SECTION 2: YOUTUBE BROADCAST (Clean Natural Flow, Unblocked Controls) */}

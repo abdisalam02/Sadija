@@ -10,6 +10,7 @@ interface HeaderProps {
   navY: MotionValue<number>;
   scrollY: MotionValue<number>;
   nameDocked: boolean;
+  socialRanges: Array<{ start: number; end: number }>;
 }
 
 // Custom crisp TikTok SVG
@@ -32,16 +33,17 @@ const getIcon = (platform: SocialLink['platform']) => {
   }
 };
 
-/** Each social icon arrives slightly after the previous one as the nav builds. */
+/** Each social icon arrives exactly as its hero row reaches the navbar. */
 const NavSocialIcon: React.FC<{
   link: SocialLink;
-  index: number;
   scrollY: MotionValue<number>;
-}> = ({ link, index, scrollY }) => {
-  const start = 200 + index * 34;
-  const opacity = useTransform(scrollY, [start, start + 90], [0, 1]);
-  const y = useTransform(scrollY, [start, start + 90], [10, 0]);
-  const scale = useTransform(scrollY, [start, start + 90], [0.8, 1]);
+  range?: { start: number; end: number };
+}> = ({ link, scrollY, range }) => {
+  const start = range?.start ?? 99999;
+  const end = range?.end ?? 99999;
+  const opacity = useTransform(scrollY, [start, end], [0, 1]);
+  const y = useTransform(scrollY, [start, end], [10, 0]);
+  const scale = useTransform(scrollY, [start, end], [0.8, 1]);
 
   return (
     <motion.a
@@ -64,10 +66,14 @@ export const Header: React.FC<HeaderProps> = ({
   navY,
   scrollY,
   nameDocked,
+  socialRanges,
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const shareStart = 200 + socials.length * 34 + 18;
+  const lastSocialEnd = socialRanges.length
+    ? Math.max(...socialRanges.map((range) => range.end))
+    : 500;
+  const shareStart = Math.max(200, lastSocialEnd + 50);
   const shareOpacity = useTransform(scrollY, [shareStart, shareStart + 90], [0, 1]);
   const shareY = useTransform(scrollY, [shareStart, shareStart + 90], [10, 0]);
   const shareScale = useTransform(scrollY, [shareStart, shareStart + 90], [0.8, 1]);
@@ -106,7 +112,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Neat Social Icons Floating Dock — each item docks in on scroll */}
         <div className="flex items-center gap-1.5">
           {socials.map((link, index) => (
-            <NavSocialIcon key={link.id} link={link} index={index} scrollY={scrollY} />
+            <NavSocialIcon
+              key={link.id}
+              link={link}
+              scrollY={scrollY}
+              range={socialRanges[index]}
+            />
           ))}
 
           <motion.button
