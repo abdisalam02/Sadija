@@ -58,38 +58,91 @@
   scroll-timeline: --app-dock block;
 }
 
-.dock-css-word {
+/* Shared shell for every dock clone (CSS timeline and JS scrub alike). */
+.dock-word {
   position: fixed;
   z-index: 60;
   transform-origin: top left;
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
+  display: grid;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  animation: dock-css linear both;
+}
+
+/* The two ink copies sit in the same grid cell, so they share one box. */
+.dock-ink {
+  grid-area: 1 / 1;
+}
+
+/*
+ * D: transform + opacity only. Both are compositable, so the browser never
+ * has to repaint the wordmark while it travels — animating colour or
+ * text-shadow here forced a full text repaint every frame, which read as
+ * stutter when the page was scrolled slowly.
+ */
+.dock-css-word {
+  animation:
+    dock-css linear both,
+    dock-handoff linear both;
+  animation-timeline: --app-dock, --app-dock;
+  animation-range:
+    0 var(--dock-distance),
+    var(--dock-distance) calc(var(--dock-distance) + 10px);
+}
+
+.dock-css-word .dock-ink--start {
+  animation: dock-ink-out linear both;
   animation-timeline: --app-dock;
-  animation-range: 0 var(--dock-distance);
+  animation-range:
+    calc(var(--dock-distance) * 0.45) calc(var(--dock-distance) * 0.88);
+}
+
+.dock-css-word .dock-ink--end {
+  animation: dock-ink-in linear both;
+  animation-timeline: --app-dock;
+  animation-range:
+    calc(var(--dock-distance) * 0.45) calc(var(--dock-distance) * 0.88);
 }
 
 @keyframes dock-css {
   from {
     transform: translate(0, 0) scale(1);
-    color: var(--dock-start-color);
-    text-shadow: var(--dock-start-shadow);
-  }
-  58% {
-    text-shadow: var(--dock-start-shadow);
-  }
-  92% {
-    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
   to {
     transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-scale));
-    color: #141518;
-    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* The landed clone is a 96px raster scaled down to nav size, so hand the last
+   few pixels over to the real (crisp) brand element. */
+@keyframes dock-handoff {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dock-ink-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dock-ink-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

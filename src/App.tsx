@@ -35,6 +35,13 @@ export function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [nameDocked, setNameDocked] = useState(false);
   const handleNameReady = useCallback(() => setNameDocked(true), []);
+  // Measured travel of the hero wordmark into the nav. The nav has to finish
+  // arriving on exactly the same scroll position, otherwise the pill keeps
+  // sliding after the name has already parked (which reads as a stutter).
+  const [dockDistance, setDockDistance] = useState(0);
+  const handleDockDistance = useCallback((distance: number) => {
+    setDockDistance((current) => (Math.abs(current - distance) < 0.5 ? current : distance));
+  }, []);
   const [socialRanges, setSocialRanges] = useState<Array<{ start: number; end: number }>>([]);
   const [isDesktop, setIsDesktop] = useState(false);
   const NAV_DROP = 32;
@@ -137,15 +144,17 @@ export function App() {
     offset: ['start start', 'end end'],
   });
 
-  // The nav descends to meet the name. The timing follows the chosen dock
-  // behaviour so an empty pill never floats before the brand arrives.
+  // The nav descends to meet the name and is fully seated the moment the name
+  // lands. Desktop reveals it across the whole dock; mobile only over the last
+  // stretch, so the pill doesn't float over the hero photograph.
+  const navEnd = dockDistance > 0 ? dockDistance : isDesktop ? 110 : 440;
   const navRange: [number, number] = isDesktop
-    ? [0, 110]
+    ? [0, navEnd]
     : dockMode === 'B'
       ? [255, 355]
       : dockMode === 'E'
         ? [240, 350]
-        : [355, 440];
+        : [Math.max(0, navEnd - 90), navEnd];
   const navOpacity = useTransform(scrollY, navRange, [0, 1]);
   const navY = useTransform(scrollY, navRange, [-NAV_DROP, 0]);
 
@@ -187,6 +196,7 @@ export function App() {
           navY={navY}
           scrollY={scrollY}
           nameDocked={nameDocked}
+          dockDistance={dockDistance}
           socialRanges={socialRanges}
         />
 
@@ -195,6 +205,7 @@ export function App() {
             scrollY={scrollY}
             name={clientProfile.name}
             onReady={handleNameReady}
+            onDistance={handleDockDistance}
             navOffset={NAV_DROP}
             navY={navY}
             mobile={!isDesktop}

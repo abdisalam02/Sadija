@@ -29,6 +29,8 @@ interface DockingNameProps {
   scrollY: MotionValue<number>;
   name: string;
   onReady?: () => void;
+  /** Reports the measured travel so the nav can finish arriving exactly when the name lands. */
+  onDistance?: (distance: number) => void;
   navOffset?: number;
   navY?: MotionValue<number>;
   mobile?: boolean;
@@ -60,26 +62,6 @@ const fadeShadow = (shadow: string, fade: number) => {
   })`;
 };
 
-const parseHex = (color: string) => {
-  const match = color.trim().match(/^#([\da-f]{3}|[\da-f]{6})$/i);
-  if (!match) return null;
-  const hex = match[1].length === 3 ? match[1].split('').map((c) => c + c).join('') : match[1];
-  return [
-    parseInt(hex.slice(0, 2), 16),
-    parseInt(hex.slice(2, 4), 16),
-    parseInt(hex.slice(4, 6), 16),
-  ];
-};
-
-/** Linear sRGB mix, matching what the native CSS keyframes do. */
-const mixColor = (from: string, to: string, t: number) => {
-  const a = parseHex(from);
-  const b = parseHex(to);
-  if (!a || !b) return from;
-  const mix = a.map((channel, index) => Math.round(channel + (b[index] - channel) * clamp01(t)));
-  return `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`;
-};
-
 const useFadingShadow = (progress: MotionValue<number>, shadow: string) =>
   useTransform(progress, (value) => fadeShadow(shadow, (value - 0.58) / 0.34));
 
@@ -97,6 +79,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
   scrollY,
   name,
   onReady,
+  onDistance,
   navOffset = 20,
   navY,
   mobile = false,
@@ -132,7 +115,14 @@ export const DockingName: React.FC<DockingNameProps> = ({
     // the user has already scrolled when the measurement runs.
     const currentNavY = navY ? navY.get() : -navOffset;
     const brandTopAtRest = brandRect.top - currentNavY;
-    const targetTop = brandTopAtRest + (brandRect.height - textRect.height * scale) / 2;
+    // Centre the clone's *line box* (not the font's ink box) inside the brand's
+    // line box, otherwise the scaled wordmark lands ~1.5px above the brand and
+    // the hand-off at the end of the dock shows a visible nudge.
+    const heroLineHeight = parseFloat(computed.lineHeight) || heroFontSize;
+    const cloneLineHeight = heroLineHeight * scale;
+    const targetTop = brandTopAtRest + (brandRect.height - cloneLineHeight) / 2;
+
+    const distance = Math.max(60, startTop - targetTop);
 
     setGeometry({
       name,
@@ -142,7 +132,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
       startHeight: textRect.height,
       targetLeft: brandRect.left,
       targetTop,
-      distance: Math.max(60, startTop - targetTop),
+      distance,
       scale,
       fontSize: heroFontSize,
       fontWeight: Number(computed.fontWeight) || 800,
@@ -151,8 +141,9 @@ export const DockingName: React.FC<DockingNameProps> = ({
       fontFamily: computed.fontFamily,
     });
     setMeasured(true);
+    onDistance?.(distance);
     onReady?.();
-  }, [name, navOffset, navY, onReady]);
+  }, [name, navOffset, navY, onReady, onDistance]);
 
   useEffect(() => {
     let cancelled = false;
@@ -237,6 +228,40 @@ const DockWord: React.FC<{
   >
     {geometry.name}
   </motion.span>
+);
+
+/**
+ * Two stacked copies of the wordmark — the hero ink and the nav ink. Fading
+ * one out while the other fades in is pixel-identical to interpolating the
+ * colour (both copies share the exact same glyph geometry), but `opacity` is
+ * compositable, so the whole dock can stay on the compositor. Animating
+ * `color`/`text-shadow` on the moving element forced a full text repaint
+ * every frame, which is what made slow scrolling look like it was stuttering.
+ */
+const DockInks: React.FC<{
+  geometry: DockGeometry;
+  startColor: string;
+  startShadow: string;
+  startOpacity?: MotionValue<number> | number;
+  endOpacity?: MotionValue<number> | number;
+  css?: boolean;
+}> = ({ geometry, startColor, startShadow, startOpacity, endOpacity, css = false }) => (
+  <>
+    <motion.span
+      aria-hidden="true"
+      className={`dock-ink${css ? ' dock-ink--start' : ''}`}
+      style={{ color: startColor, textShadow: startShadow, opacity: startOpacity }}
+    >
+      {geometry.name}
+    </motion.span>
+    <motion.span
+      aria-hidden="true"
+      className={`dock-ink${css ? ' dock-ink--end' : ''}`}
+      style={{ color: '#141518', textShadow: '0 0 0 rgba(0,0,0,0)', opacity: endOpacity }}
+    >
+      {geometry.name}
+    </motion.span>
+  </>
 );
 
 interface DockVariantProps {
@@ -405,8 +430,6 @@ const DockD: React.FC<DockVariantProps & { mobile?: boolean }> = (props) => {
     '--dock-x': `${geometry.targetLeft - geometry.startLeft}px`,
     '--dock-y': `-${geometry.distance}px`,
     '--dock-scale': geometry.scale,
-    '--dock-start-color': startColor,
-    '--dock-start-shadow': startShadow,
   } as React.CSSProperties;
 
   return (
@@ -414,7 +437,7 @@ const DockD: React.FC<DockVariantProps & { mobile?: boolean }> = (props) => {
       aria-hidden="true"
       data-docking-name
       data-dock-mode="D"
-      className="dock-css-word font-syne uppercase"
+      className="dock-word dock-css-word font-syne uppercase"
       style={{
         ...vars,
         left: geometry.startLeft,
@@ -426,7 +449,12 @@ const DockD: React.FC<DockVariantProps & { mobile?: boolean }> = (props) => {
         fontFamily: geometry.fontFamily,
       }}
     >
-      {geometry.name}
+      <DockInks
+        geometry={geometry}
+        startColor={startColor}
+        startShadow={startShadow}
+        css
+      />
     </span>
   );
 };
@@ -461,20 +489,43 @@ const DockDScrub: React.FC<DockVariantProps> = ({
   );
   const y = useTransform(scrollY, (value) => -Math.min(Math.max(value, 0), distance));
   const scale = useTransform(progress, [0, 1], [1, geometry.scale]);
-  const color = useTransform(progress, (value) => mixColor(startColor, '#141518', value));
-  const textShadow = useFadingShadow(progress, startShadow);
+  // White ink holds while the name is still over the photograph, then swaps to
+  // the nav ink in one compositable opacity crossfade.
+  const mix = useTransform(progress, [0.45, 0.88], [0, 1]);
+  const startOpacity = useTransform(mix, [0, 1], [1, 0]);
+  // Same hand-off as the CSS path: the landed clone is a downscaled bitmap,
+  // so it dissolves into the crisp nav brand over the last few pixels.
+  const handoff = useTransform(scrollY, [distance, distance + 10], [1, 0]);
 
   if (!ready) return null;
 
   return (
-    <DockWord
-      geometry={geometry}
-      x={x}
-      y={y}
-      scale={scale}
-      color={color}
-      textShadow={textShadow}
-      mode="D"
-    />
+    <motion.span
+      aria-hidden="true"
+      data-docking-name
+      data-dock-mode="D"
+      className="dock-word font-syne uppercase"
+      style={{
+        left: geometry.startLeft,
+        top: geometry.startTop,
+        x,
+        y,
+        scale,
+        opacity: handoff,
+        fontSize: geometry.fontSize,
+        fontWeight: geometry.fontWeight,
+        letterSpacing: geometry.letterSpacing,
+        lineHeight: geometry.lineHeight,
+        fontFamily: geometry.fontFamily,
+      }}
+    >
+      <DockInks
+        geometry={geometry}
+        startColor={startColor}
+        startShadow={startShadow}
+        startOpacity={startOpacity}
+        endOpacity={mix}
+      />
+    </motion.span>
   );
 };

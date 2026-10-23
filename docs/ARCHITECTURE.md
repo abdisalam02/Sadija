@@ -36,8 +36,10 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
   - **C** — stays full size until just below the nav (~20px), then collapses into it.
   - **D** — native CSS scroll-driven animation on the `#app-scroll` timeline (`#app-shell` sets `timeline-scope`) on desktop. Mobile (and browsers without scroll timelines) use `DockDScrub`: the same linear track, but with a tight spring on x/scale only — y stays locked to scroll, so touch-scroll steps cannot make the size visibly jump.
   - **E** — no clone: the in-flow name darkens/fades as the nav brand fades in (pure crossfade).
-- The mobile hero text-shadow fades out with the dock (58–92% of the range) so the wordmark is clean once it reaches the nav; there is no glow behind the final nav brand.
-- Mobile nav reveal is mode-aware so an empty pill never floats ahead of the brand (B: 255–355, E: 240–350, A/C/D: 355–440).
+- **D is compositor-only.** The clone is a `.dock-word` grid holding two `.dock-ink` copies of the name — the hero ink (white/soft shadow on mobile, `#3d3d3d` on desktop) and the nav ink (`#141518`, no shadow). Animating `color`/`text-shadow` forced Chrome to repaint the whole 564×96 wordmark every frame; crossfading the two copies with `opacity` is the identical blend but stays on the compositor. A scroll trace confirms **0 paint events on the wordmark** during travel. Never reintroduce `color`/`text-shadow` into `dock-css`.
+- The clone lands on the *line box* of `#nav-brand` (`targetTop` is corrected by line height, not ink height) and `#nav-brand` is `font-extrabold` so the clone's 82.4px landed width matches the brand's box exactly. Because the landed clone is a 96px raster downscaled ~6.9×, it dissolves into the crisp real brand over the **10px after** the dock (same position, no ghost, no grey dip).
+- `onDistance` reports the measured travel back to `App.tsx`, and `navRange` is derived from it, so the nav finishes arriving on the same scroll pixel the name lands on (desktop 62px, mobile 381px).
+- Mobile nav reveal is mode-aware so an empty pill never floats ahead of the brand (B: 255–355, E: 240–350, A/C/D: `[distance − 90, distance]`).
 - Lab-only comparison: `?lab=dock` opens the real page with a small Dock switcher in the bottom-left.
 
 ### 1c. Desktop Layout

@@ -39,8 +39,8 @@ export const clientProfile: ClientProfile = {
       id: 'tiktok',
       platform: 'tiktok',
       label: 'TikTok',
-      handle: '@sadijagure',
-      url: 'https://tiktok.com/@sadijagure',
+      handle: '@saddija.g',
+      url: 'https://www.tiktok.com/@saddija.g',
       followers: 'Styling & GRWM'
     },
     {

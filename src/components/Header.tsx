@@ -10,6 +10,8 @@ interface HeaderProps {
   navY: MotionValue<number>;
   scrollY: MotionValue<number>;
   nameDocked: boolean;
+  /** Scroll distance the wordmark travels before it lands in the nav. */
+  dockDistance: number;
   socialRanges: Array<{ start: number; end: number }>;
 }
 
@@ -66,9 +68,23 @@ export const Header: React.FC<HeaderProps> = ({
   navY,
   scrollY,
   nameDocked,
+  dockDistance,
   socialRanges,
 }) => {
   const [copied, setCopied] = useState(false);
+
+  // The travelling clone is a downscaled bitmap by the time it reaches the
+  // nav, so it dissolves into this crisp brand over the last few pixels of
+  // travel. Both are set at weight 800, so their boxes are identical.
+  const handoffEnd = dockDistance > 0 ? dockDistance : 1;
+  // Swap instantly under the clone (which is painted on top), then let the
+  // clone dissolve away. Cross-fading the two at 50/50 would dip their combined
+  // coverage to 75% and read as the wordmark flashing grey.
+  const brandOpacity = useTransform(
+    scrollY,
+    [handoffEnd - 0.5, handoffEnd],
+    [0, 1]
+  );
 
   const lastSocialEnd = socialRanges.length
     ? Math.max(...socialRanges.map((range) => range.end))
@@ -101,13 +117,13 @@ export const Header: React.FC<HeaderProps> = ({
       className="fixed top-3 inset-x-0 z-50 flex justify-center px-4 pointer-events-none"
     >
       <div className="pointer-events-auto bg-white/80 backdrop-blur-md border border-neutral-200/80 rounded-full px-5 py-2.5 shadow-lg shadow-black/[0.04] flex items-center justify-between gap-6 max-w-lg w-full">
-        <span
+        <motion.span
           id="nav-brand"
-          style={{ opacity: nameDocked ? 0 : 1 }}
-          className="font-syne font-bold text-sm tracking-tight text-neutral-900 uppercase"
+          style={{ opacity: nameDocked ? brandOpacity : 1 }}
+          className="font-syne font-extrabold text-sm tracking-tight text-neutral-900 uppercase"
         >
           {name}
-        </span>
+        </motion.span>
 
         {/* Neat Social Icons Floating Dock — each item docks in on scroll */}
         <div className="flex items-center gap-1.5">
