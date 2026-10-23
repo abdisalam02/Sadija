@@ -30,6 +30,7 @@ interface DockingNameProps {
   name: string;
   onReady?: () => void;
   navOffset?: number;
+  navY?: MotionValue<number>;
   startColor?: string;
   startShadow?: string;
   mode?: DockMode;
@@ -96,6 +97,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
   name,
   onReady,
   navOffset = 20,
+  navY,
   startColor = '#3d3d3d',
   startShadow = '0 0 0 rgba(0,0,0,0)',
   mode = 'A',
@@ -123,8 +125,12 @@ export const DockingName: React.FC<DockingNameProps> = ({
     const scale = brandFontSize / heroFontSize;
 
     const startTop = textRect.top + scrollTop;
-    // navY starts by navOffset; by the time the name docks the header is at y=0.
-    const targetTop = brandRect.top + navOffset + (brandRect.height - textRect.height * scale) / 2;
+    // The header is translated by navY while it is hidden. Measure the
+    // undocked brand position (navY = 0) so the target stays correct even if
+    // the user has already scrolled when the measurement runs.
+    const currentNavY = navY ? navY.get() : -navOffset;
+    const brandTopAtRest = brandRect.top - currentNavY;
+    const targetTop = brandTopAtRest + (brandRect.height - textRect.height * scale) / 2;
 
     setGeometry({
       name,
@@ -144,7 +150,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
     });
     setMeasured(true);
     onReady?.();
-  }, [name, navOffset, onReady]);
+  }, [name, navOffset, navY, onReady]);
 
   useEffect(() => {
     let cancelled = false;
