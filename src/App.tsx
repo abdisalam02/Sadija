@@ -163,7 +163,7 @@ export function App() {
                 <h1
                   id="client-name-title"
                   style={{ opacity: nameDocked ? 0 : 1 }}
-                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-neutral-900"
+                  className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-[#3d3d3d]"
                 >
                   <span id="hero-name-text">SADIJA</span>
                 </h1>
