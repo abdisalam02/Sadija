@@ -48,6 +48,43 @@
   box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.09);
 }
 
+/* ── D: native CSS scroll-driven dock ──────────────────────────────────── */
+
+#app-shell {
+  timeline-scope: --app-dock;
+}
+
+#app-scroll {
+  scroll-timeline: --app-dock block;
+}
+
+.dock-css-word {
+  position: fixed;
+  z-index: 60;
+  transform-origin: top left;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  animation: dock-css linear both;
+  animation-timeline: --app-dock;
+  animation-range: 0 var(--dock-distance);
+}
+
+@keyframes dock-css {
+  from {
+    transform: translate(0, 0) scale(1);
+    color: var(--dock-start-color);
+  }
+  to {
+    transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-scale));
+    color: #141518;
+  }
+}
+
 /* ── Signature lab effects ─────────────────────────────────────────────── */
 
 .font-signature {

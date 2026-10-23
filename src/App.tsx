@@ -10,6 +10,7 @@ import { BusinessCollabs } from './components/BusinessCollabs';
 import { Footer } from './components/Footer';
 import { FloatingPlayer } from './components/FloatingPlayer';
 import { DockingName } from './components/DockingName';
+import { DockLabSwitcher } from './components/DockLabSwitcher';
 import { MediaProvider } from './context/MediaContext';
 import { fetchLatestYouTubeVideo } from './utils/mediaFetcher';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
@@ -38,13 +39,21 @@ export function App() {
   const [isDesktop, setIsDesktop] = useState(false);
   const NAV_DROP = 32;
 
-  // A/B dock experiment: default from config, overridable with ?dock=a / ?dock=b.
+  // Dock experiment: default from config, overridable with ?dock=a ... ?dock=e.
   const dockMode: DockMode = (() => {
     const override = new URLSearchParams(window.location.search).get('dock')?.toLowerCase();
-    if (override === 'b') return 'B';
     if (override === 'a') return 'A';
+    if (override === 'b') return 'B';
+    if (override === 'c') return 'C';
+    if (override === 'd') return 'D';
+    if (override === 'e') return 'E';
     return DEFAULT_DOCK_MODE;
   })();
+
+  // E is a pure crossfade: the in-flow name stays put and dissolves into the
+  // nav brand as the header arrives, so there is no clone to track/dock.
+  const isCrossfade = dockMode === 'E';
+  const isDockLab = new URLSearchParams(window.location.search).get('lab') === 'dock';
 
   // Track viewport class for the nav's reveal timing (it comes down to meet the name).
   useEffect(() => {
@@ -128,11 +137,27 @@ export function App() {
     offset: ['start start', 'end end'],
   });
 
-  // The nav descends to meet the name. On desktop the hero is close to the
-  // top so it reveals early; on mobile it waits until the name is nearly docked.
-  const navRange: [number, number] = isDesktop ? [0, 110] : [250, 350];
+  // The nav descends to meet the name. The timing follows the chosen dock
+  // behaviour so an empty pill never floats before the brand arrives.
+  const navRange: [number, number] = isDesktop
+    ? [0, 110]
+    : dockMode === 'B'
+      ? [255, 355]
+      : dockMode === 'E'
+        ? [240, 350]
+        : [355, 440];
   const navOpacity = useTransform(scrollY, navRange, [0, 1]);
   const navY = useTransform(scrollY, navRange, [-NAV_DROP, 0]);
+
+  // Crossfade (E): the in-flow hero name darkens and dissolves as the nav
+  // arrives; the nav brand takes over in the same stretch of scroll.
+  const heroFadeRange: [number, number] = isDesktop ? [10, 130] : [210, 360];
+  const heroNameOpacity = useTransform(scrollY, heroFadeRange, [1, 0]);
+  const heroNameColor = useTransform(
+    scrollY,
+    [0, isDesktop ? 160 : 300],
+    [isDesktop ? '#3d3d3d' : '#ffffff', '#141518']
+  );
 
   // Synchronize Scroll Timing with the 3 Left-Side Images (perfect1 -> perfect3 -> perfect4)
   useMotionValueEvent(scrollYProgress, 'change', (latest) => {
@@ -150,7 +175,10 @@ export function App() {
     <MediaProvider>
       {/* App shell: pinned to the viewport height and never scrolls, so mobile
           browser chrome (address bar) never animates and the stage stays put. */}
-      <div className="h-[100dvh] w-full bg-[#fcfbf8] text-[#141518] selection:bg-neutral-900 selection:text-white relative overflow-hidden">
+      <div
+        id="app-shell"
+        className="h-[100dvh] w-full bg-[#fcfbf8] text-[#141518] selection:bg-neutral-900 selection:text-white relative overflow-hidden"
+      >
         {/* 1. FLOATING TOP DOCK (Glides down smoothly when scrolling down) */}
         <Header
           name={clientProfile.name}
@@ -162,17 +190,19 @@ export function App() {
           socialRanges={socialRanges}
         />
 
-        <DockingName
-          scrollY={scrollY}
-          name={clientProfile.name}
-          onReady={handleNameReady}
-          navOffset={NAV_DROP}
-          startColor={isDesktop ? '#3d3d3d' : '#ffffff'}
-          startShadow={
-            isDesktop ? '0 0 0 rgba(0,0,0,0)' : '0 2px 18px rgba(20,21,24,0.35)'
-          }
-          mode={dockMode}
-        />
+        {!isCrossfade && (
+          <DockingName
+            scrollY={scrollY}
+            name={clientProfile.name}
+            onReady={handleNameReady}
+            navOffset={NAV_DROP}
+            startColor={isDesktop ? '#3d3d3d' : '#ffffff'}
+            startShadow={
+              isDesktop ? '0 0 0 rgba(0,0,0,0)' : '0 2px 18px rgba(20,21,24,0.35)'
+            }
+            mode={dockMode}
+          />
+        )}
 
         {/* 2. STATIC VISUAL STAGE (outside the scroll area, so it can never move with the page) */}
         <aside
@@ -214,13 +244,16 @@ export function App() {
                 </div>
 
                 {/* Monumental Name — the visible version docks into the nav */}
-                <h1
+                <motion.h1
                   id="client-name-title"
-                  style={{ opacity: nameDocked ? 0 : 1 }}
+                  style={{
+                    opacity: isCrossfade ? heroNameOpacity : nameDocked ? 0 : 1,
+                    color: isCrossfade ? heroNameColor : undefined,
+                  }}
                   className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[0.88] uppercase select-none w-full text-white lg:text-[#3d3d3d] drop-shadow-[0_2px_18px_rgba(20,21,24,0.35)] lg:drop-shadow-none"
                 >
                   <span id="hero-name-text">SADIJA</span>
-                </h1>
+                </motion.h1>
 
                 {/* Each social row fades only when it reaches the nav */}
                 <div className="pt-2">
@@ -302,6 +335,9 @@ export function App() {
 
         {/* Dynamic Global Media Player Pill (Syncs across Spotify and YouTube) */}
         <FloatingPlayer />
+
+        {/* Lab-only A–E switcher; normal visits never render this. */}
+        {isDockLab && <DockLabSwitcher current={dockMode} />}
       </div>
     </MediaProvider>
   );

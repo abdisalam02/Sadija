@@ -23,6 +23,16 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
   - `useScroll` uses `container: scrollRef` (the window never scrolls).
   - Sections are normal editorial flow (not sticky) to match the shipped layout.
 
+### 1b. Hero Name Dock (`DockingName.tsx`)
+- A fixed, aria-hidden clone of `#hero-name-text` is measured against `#nav-brand`; the real `<h1>` stays in flow (and is hidden once the clone is ready). The header nav reveals on a scroll range and the clone hands off to the nav brand.
+- Five modes, selected with `?dock=a` … `?dock=e`; the default lives in `src/config/animationConfig.ts`:
+  - **A** — one continuous `useSpring` on `scrollY` drives x/y/scale/colour together (glides on flings).
+  - **B** — follows the page at full size, then a time-based spring docks it over the last ~110px.
+  - **C** — stays full size until just below the nav (~20px), then collapses into it.
+  - **D** — native CSS scroll-driven animation on the `#app-scroll` timeline (`#app-shell` sets `timeline-scope`); falls back to A when unsupported.
+  - **E** — no clone: the in-flow name darkens/fades as the nav brand fades in (pure crossfade).
+- Mobile nav reveal is mode-aware so an empty pill never floats ahead of the brand (B: 255–355, E: 240–350, A/C/D: 355–440).
+
 ### 2. Media Coordination (`MediaContext.tsx` & `FloatingPlayer.tsx`)
 - Centralized audio and video controller:
   - **Spotify**: 30s preview playback for episodes via HTMLAudioElement (volume: `0.35`).

@@ -43,6 +43,9 @@ const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
  *
  * mode A: one continuous scroll-driven spring (position + scale together).
  * mode B: follows the page, then a time-based spring docks it into the nav.
+ * mode C: follows at full size, then collapses from just below the nav.
+ * mode D: native CSS scroll-driven timeline (no JS per-frame transforms).
+ * mode E: no clone; the in-flow hero name crossfades into the nav brand.
  */
 export const DockingName: React.FC<DockingNameProps> = ({
   scrollY,
@@ -132,7 +135,11 @@ export const DockingName: React.FC<DockingNameProps> = ({
     startShadow,
   };
 
-  return mode === 'B' ? <DockB {...shared} /> : <DockA {...shared} />;
+  if (mode === 'E') return null;
+  if (mode === 'D') return <DockD {...shared} />;
+  if (mode === 'B') return <DockTimed {...shared} mode="B" zone={110} colorMode="mixed" spring={B_SPRING} />;
+  if (mode === 'C') return <DockTimed {...shared} mode="C" zone={20} colorMode="mixed" spring={C_SPRING} />;
+  return <DockA {...shared} />;
 };
 
 /* ── shared wordmark ────────────────────────────────────────────────────── */
@@ -144,10 +151,12 @@ const DockWord: React.FC<{
   scale: MotionValue<number>;
   color: MotionValue<string>;
   startShadow: string;
-}> = ({ geometry, x, y, scale, color, startShadow }) => (
+  mode: DockMode;
+}> = ({ geometry, x, y, scale, color, startShadow, mode }) => (
   <motion.span
     aria-hidden="true"
     data-docking-name
+    data-dock-mode={mode}
     style={{
       position: 'fixed',
       left: geometry.startLeft,
@@ -229,30 +238,30 @@ const DockA: React.FC<DockVariantProps> = ({
       scale={scale}
       color={color}
       startShadow={startShadow}
+      mode="A"
     />
   );
 };
 
-/* ── B — page-follow then timed dock ────────────────────────────────────── */
+/* ── B/C — page-follow then timed dock ──────────────────────────────────── */
 
-const DockB: React.FC<DockVariantProps> = ({
-  geometry,
-  scrollY,
-  ready,
-  startColor,
-  startShadow,
-}) => {
+const B_SPRING = { stiffness: 150, damping: 28, mass: 0.7, restDelta: 0.0005 };
+const C_SPRING = { stiffness: 120, damping: 24, mass: 0.8, restDelta: 0.0005 };
+
+const DockTimed: React.FC<
+  DockVariantProps & {
+    mode: 'B' | 'C';
+    zone: number;
+    colorMode: 'mixed' | 'dock';
+    spring: { stiffness: number; damping: number; mass: number; restDelta: number };
+  }
+> = ({ geometry, scrollY, ready, startColor, startShadow, mode, zone, colorMode, spring }) => {
   const distance = geometry.distance;
-  const dockZone = Math.min(110, Math.max(24, distance * 0.32));
+  const dockZone = Math.max(12, Math.min(zone, distance - 12));
   const trigger = Math.max(0, distance - dockZone);
   const dockedRef = useRef(false);
 
-  const dock = useSpring(0, {
-    stiffness: 150,
-    damping: 28,
-    mass: 0.7,
-    restDelta: 0.0005,
-  });
+  const dock = useSpring(0, spring);
 
   useMotionValueEvent(scrollY, 'change', (value) => {
     if (!dockedRef.current && value >= trigger) {
@@ -293,7 +302,9 @@ const DockB: React.FC<DockVariantProps> = ({
   const colorMix = useTransform(
     [scrollY, dock],
     ([scroll, dockValue]: number[]) =>
-      Math.max(clamp01((scroll - colorStart) / (colorEnd - colorStart)), dockValue)
+      colorMode === 'dock'
+        ? dockValue
+        : Math.max(clamp01((scroll - colorStart) / (colorEnd - colorStart)), dockValue)
   );
   const color = useTransform(colorMix, [0, 1], [startColor, '#141518']);
 
@@ -307,6 +318,48 @@ const DockB: React.FC<DockVariantProps> = ({
       scale={scale}
       color={color}
       startShadow={startShadow}
+      mode={mode}
     />
+  );
+};
+
+/* ── D — native CSS scroll-driven animation ─────────────────────────────── */
+
+const DockD: React.FC<DockVariantProps> = (props) => {
+  const { geometry, ready, startColor, startShadow } = props;
+
+  const supported =
+    typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline: scroll()');
+  if (!supported) return <DockA {...props} />;
+  if (!ready) return null;
+
+  const vars = {
+    '--dock-distance': `${geometry.distance}px`,
+    '--dock-x': `${geometry.targetLeft - geometry.startLeft}px`,
+    '--dock-y': `-${geometry.distance}px`,
+    '--dock-scale': geometry.scale,
+    '--dock-start-color': startColor,
+  } as React.CSSProperties;
+
+  return (
+    <span
+      aria-hidden="true"
+      data-docking-name
+      data-dock-mode="D"
+      className="dock-css-word font-syne uppercase"
+      style={{
+        ...vars,
+        left: geometry.startLeft,
+        top: geometry.startTop,
+        fontSize: geometry.fontSize,
+        fontWeight: geometry.fontWeight,
+        letterSpacing: geometry.letterSpacing,
+        lineHeight: geometry.lineHeight,
+        fontFamily: geometry.fontFamily,
+        textShadow: startShadow,
+      }}
+    >
+      {geometry.name}
+    </span>
   );
 };
