@@ -55,10 +55,10 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
 - Preserves native 120Hz ProMotion touch scrolling on mobile devices.
 - Deep links (`?section=`, hash anchors) and the footer "Back to Top" control scroll the app shell.
 
-### 5. Site Sign-off (`Footer.tsx`)
-- Full-width colophon panel (`bg-[#fcfbf8]`) rendered outside the content column, directly after it inside `#app-scroll`.
-- Credited to **A.Gure** (`agure.space`):
-  - A slow mono ticker with a live "available for select projects" dot (pauses on hover, respects `prefers-reduced-motion`).
-  - An oversized `A.GURE` wordmark sized at `14.5vw` so the type exactly fits the footer width at every breakpoint (Syne 800 is ~6.09em wide for the full lockup).
-  - The period is a square that rotates into a diamond on hover; letters lift in a 35ms stagger; the domain underline draws in and the arrow shifts.
-  - The mark reveals with a clipped line mask; the in-view observer is attached to the wrapper (not the clipped span) so it fires reliably.
+### 5. Footer (`Footer.tsx`) & Signature Labs
+- Live footer is the original translucent social row + colophon, still inside the content column over the page background. "Back to Top" scrolls `#app-scroll`.
+- The oversized A.Gure sign-off was reverted — it competed with the site's imagery and glass surfaces. A final small credit is pending a direction.
+- Preview-only labs (not linked from the site; they re-enable document scrolling with `useUnlockDocumentScroll`):
+  - `?lab=footer` — five quiet colophon placements (bracket line, signature, monogram, glass pill, hover reveal).
+  - `?lab=signature` — twelve distinct signature studies: atelier seal, ink signature, split-flap token, scramble decoder, magnetic monogram, dot-matrix receipt, woven garment label, barcode hang tag, printer's registration mark, embossed seal, photo-filled type, ticket stub.
+  - Both labs include hover/click previews and reference links (Awwwards, Codrops, Fancy Components, HotFX, textmode.js, Dribbble).

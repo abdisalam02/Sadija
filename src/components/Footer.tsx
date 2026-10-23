@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowUp, ArrowUpRight, Instagram, Youtube, Mail } from 'lucide-react';
+import { ArrowUp, Instagram, Youtube, Mail } from 'lucide-react';
 import { SocialLink } from '../types';
 
 interface FooterProps {
@@ -16,40 +15,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' })
   </svg>
 );
 
-const MARQUEE_ITEMS = [
-  'Available for select projects',
-  'Design & Development',
-  'Agure.space',
-  'Oslo / Worldwide',
-];
-
-const MarkTicker: React.FC<{ hidden?: boolean }> = ({ hidden }) => (
-  <div
-    aria-hidden={hidden}
-    className="flex shrink-0 items-center gap-6 pr-6 font-mono text-[9px] font-medium uppercase tracking-[0.24em] whitespace-nowrap text-neutral-500 sm:gap-8 sm:pr-8 sm:text-[10px]"
-  >
-    {MARQUEE_ITEMS.map((item, i) => (
-      <React.Fragment key={item}>
-        {i > 0 && <span className="text-neutral-300">/</span>}
-        {i === 0 ? (
-          <span className="flex items-center gap-2 text-neutral-700">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60 motion-reduce:animate-none" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-600" />
-            </span>
-            {item}
-          </span>
-        ) : (
-          <span>{item}</span>
-        )}
-      </React.Fragment>
-    ))}
-  </div>
-);
-
 export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollToTop }) => {
-  const reduceMotion = useReducedMotion();
-
   const scrollToTop = () => {
     if (onScrollToTop) {
       onScrollToTop();
@@ -77,10 +43,8 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
     }
   };
 
-  const letters = ['A', '.', 'G', 'U', 'R', 'E'];
-
   return (
-    <footer className="relative z-30 w-full border-t border-black/10 bg-[#fcfbf8] px-5 pb-8 pt-10 sm:px-10 lg:px-14">
+    <footer className="w-full pt-10 pb-16 space-y-6 text-xs text-neutral-500 border-t border-black/5">
       {/* Quick Social Connectivity Row */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -91,20 +55,20 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
               target="_blank"
               rel="noopener noreferrer"
               aria-label={s.label}
-              className="flex items-center gap-1.5 rounded-full border border-black/5 bg-white/70 px-3 py-1.5 text-neutral-700 shadow-sm transition-all hover:bg-white hover:text-black"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white text-neutral-700 hover:text-black border border-black/5 shadow-sm transition-all"
             >
               {getIcon(s.platform)}
-              <span className="font-syne text-[11px] font-bold tracking-tight">{s.label}</span>
+              <span className="font-syne font-bold text-[11px] tracking-tight">{s.label}</span>
             </a>
           ))}
 
           {email && (
             <a
               href={`mailto:${email}`}
-              className="flex items-center gap-1.5 rounded-full border border-black/5 bg-white/70 px-3 py-1.5 text-neutral-700 shadow-sm transition-all hover:bg-white hover:text-black"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white text-neutral-700 hover:text-black border border-black/5 shadow-sm transition-all"
             >
               <Mail className="w-3.5 h-3.5" />
-              <span className="font-syne text-[11px] font-bold tracking-tight">Direct Mail</span>
+              <span className="font-syne font-bold text-[11px] tracking-tight">Direct Mail</span>
             </a>
           )}
         </div>
@@ -112,92 +76,20 @@ export const Footer: React.FC<FooterProps> = ({ name, socials, email, onScrollTo
         <button
           onClick={scrollToTop}
           aria-label="Scroll back to top"
-          className="flex items-center gap-1.5 rounded-full border border-neutral-300/80 bg-white/80 px-3.5 py-1.5 text-neutral-800 shadow-sm transition-all hover:bg-white active:scale-95"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-neutral-300/80 bg-white/80 hover:bg-white text-neutral-800 transition-all shadow-sm active:scale-95"
         >
-          <span className="text-[11px] font-medium">Back to Top</span>
+          <span className="font-medium text-[11px]">Back to Top</span>
           <ArrowUp className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Availability / craft ticker */}
-      <div className="footer-marquee mt-8 overflow-hidden border-y border-black/10 py-3">
-        <div className="footer-marquee__track flex w-max">
-          <MarkTicker />
-          <MarkTicker hidden />
-        </div>
-      </div>
-
-      {/* Site-by signature */}
-      <div className="mt-8 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.24em] text-neutral-400 sm:text-[10px]">
-        <span>[ SITE BY ]</span>
-        <span>OSLO / WORLDWIDE</span>
-      </div>
-
-      <a
-        href="https://agure.space"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="A.Gure — agure.space (opens in a new tab)"
-        className="group mt-2 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900"
-      >
-        <motion.div
-          initial={reduceMotion ? false : 'hidden'}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.35 }}
-          className="overflow-hidden pt-[0.06em]"
-        >
-          <motion.span
-            variants={{
-              hidden: { y: '108%' },
-              visible: { y: 0 },
-            }}
-            transition={
-              reduceMotion
-                ? { duration: 0 }
-                : { duration: 1, ease: [0.16, 1, 0.3, 1] }
-            }
-            className="flex items-baseline whitespace-nowrap font-syne font-extrabold uppercase leading-[0.82] tracking-[-0.055em] text-[#141518] text-[14.5vw]"
-          >
-            {letters.map((letter, i) =>
-              letter === '.' ? (
-                <span
-                  key={i}
-                  aria-hidden="true"
-                  className="footer-dot mx-[0.035em] inline-block h-[0.135em] w-[0.135em] flex-none origin-center bg-current transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-45 group-hover:scale-125"
-                />
-              ) : (
-                <span
-                  key={i}
-                  aria-hidden="true"
-                  className="footer-letter inline-block will-change-transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-[0.055em]"
-                  style={{ transitionDelay: `${i * 35}ms` }}
-                >
-                  {letter}
-                </span>
-              )
-            )}
-          </motion.span>
-        </motion.div>
-
-        <div className="mt-4 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-neutral-500 transition-colors duration-300 group-hover:text-neutral-900 lg:text-[11px]">
-          <span className="flex items-center gap-2">
-            <span className="relative">
-              agure.space
-              <span className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-current transition-transform duration-500 group-hover:scale-x-100" />
-            </span>
-            <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </span>
-          <span className="hidden text-neutral-400 sm:block">Independent designer &amp; developer</span>
-        </div>
-      </a>
-
       {/* Colophon & Copyright */}
-      <div className="mt-8 flex flex-col items-start justify-between gap-2 border-t border-black/10 pt-4 text-[11px] text-neutral-400 sm:flex-row sm:items-center">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 text-[11px] text-neutral-400">
         <div>
           <span>© {new Date().getFullYear()} {name}. </span>
           <span>Oslo, Norway.</span>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+        <span className="font-mono text-[10px] tracking-wider uppercase text-neutral-400">
           Editorial Digital Archive
         </span>
       </div>

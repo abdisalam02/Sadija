@@ -48,39 +48,85 @@
   box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.09);
 }
 
-/* Footer signature: slow editorial ticker */
-@keyframes footer-marquee {
+/* ── Signature lab effects ─────────────────────────────────────────────── */
+
+.font-signature {
+  font-family: 'Mrs Saint Delafield', 'Segoe Script', 'Brush Script MT', cursive;
+}
+
+.ink-underline {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  transition: stroke-dashoffset 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .ink-underline,
+.group:focus-visible .ink-underline {
+  stroke-dashoffset: 0;
+}
+
+.dot-type {
+  color: transparent;
+  background-image: radial-gradient(circle, #141518 1.05px, transparent 1.35px);
+  background-size: 4px 4px;
+  background-position: 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: background-position 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .dot-type {
+  background-position: 2px 2px;
+}
+
+.photo-type {
+  color: transparent;
+  background-color: #141518;
+  background-image: url('/img/simonegramstad_1720627357_3409191824586342459_215365028.jpg');
+  background-size: cover;
+  background-position: 50% 16%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: contrast(1.12) brightness(0.92) saturate(0.85);
+  transition: background-position 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .photo-type {
+  background-position: 50% 30%;
+}
+
+.woven-label {
+  background-color: #f5f1e8;
+  background-image: repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.028) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px 3px);
+}
+
+.flap-tile {
+  animation: flap-in 150ms ease-out;
+  transform-origin: 50% 0;
+}
+
+@keyframes flap-in {
   from {
-    transform: translate3d(0, 0, 0);
+    transform: rotateX(-90deg);
+    opacity: 0.4;
   }
   to {
-    transform: translate3d(-50%, 0, 0);
+    transform: rotateX(0deg);
+    opacity: 1;
   }
-}
-
-.footer-marquee__track {
-  animation: footer-marquee 36s linear infinite;
-  will-change: transform;
-}
-
-.footer-marquee {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-}
-
-.footer-marquee:hover .footer-marquee__track,
-.footer-marquee:focus-within .footer-marquee__track {
-  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .footer-marquee__track {
+  .flap-tile {
     animation: none;
-    transform: none;
   }
 
-  .footer-letter,
-  .footer-dot {
-    transition: none !important;
+  .ink-underline {
+    stroke-dashoffset: 0;
   }
 }
