@@ -6,15 +6,16 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
 ## Core Architecture
 
 ### 1. App Shell, Static Stage & Content Stream
-- **App Shell (`App.tsx`)**: the document itself is viewport-locked (`html`/`body` `height: 100%; overflow: hidden`). The only scrolling element is `#app-scroll` (`h-full overflow-y-auto`).
+- **App Shell (`App.tsx`)**: the document itself is viewport-locked (`html`/`body`: `overflow: hidden`). The only scrolling element is `#app-scroll` (`h-full overflow-y-auto`).
   - This is deliberate: Android Chrome / Samsung Internet shift `position: fixed` layers by the address-bar height when the toolbar collapses (Chromium issue 41395555). Keeping the document non-scrollable stops the toolbar from collapsing at all, so the artwork can never slide/snap during scroll.
 - **Static Stage (`EditorialStage.tsx`)**:
   - `absolute top-0 left-0 w-full lg:w-[50vw] h-[100lvh] z-20 pointer-events-none`, rendered inside the `100dvh` shell but **outside** the scroll area.
   - No `position: fixed`, no scroll-linked transforms on the stage itself.
   - 3-look synchronized scroll dissolve:
-    - Look 1: `2-removebg-preview.webp` (Linen Drape - elbow touching left screen edge: `x: -19svh, y: -5lvh`)
-    - Look 2: `IMG_5196-removebg-preview.webp` (Chambray Denim - relaxed center-right: `x: -14svh, y: -5lvh`)
-    - Look 3: `1-removebg-preview.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
+    - Look 1: `look-1-linen.webp` (Linen Drape - elbow touching left screen edge: `x: -19svh, y: -5lvh`)
+    - Look 2: `look-2-denim.webp` (Chambray Denim - relaxed center-right: `x: -14svh, y: -5lvh`)
+    - Look 3: `look-3-trench.webp` (Noir Trench - right-hugging: `x: 14svh, y: -5lvh`)
+  - Images render at 2600px tall (enough for 3x mobile). Look 1 was rebuilt from its full-resolution 1440×1800 source with the original remove.bg silhouette aligned onto it; looks 2 and 3 were AI-upscaled (Real-ESRGAN x4plus) from the best cutouts available in the repo.
   - Image heights stay in `lvh` (`108/115/128lvh`) so the photo is never resized by dynamic viewport chrome.
   - Transition: pure 1.4s opacity-only crossfade (no scale/blur jumps).
 - **Content Stream (`App.tsx`)**:
