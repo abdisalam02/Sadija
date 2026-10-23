@@ -13,6 +13,7 @@ import { DockingName } from './components/DockingName';
 import { MediaProvider } from './context/MediaContext';
 import { fetchLatestYouTubeVideo } from './utils/mediaFetcher';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
+import { DEFAULT_DOCK_MODE, type DockMode } from './config/animationConfig';
 
 export function App() {
   // The document never scrolls — all scrolling happens inside #app-scroll.
@@ -36,6 +37,14 @@ export function App() {
   const [socialRanges, setSocialRanges] = useState<Array<{ start: number; end: number }>>([]);
   const [isDesktop, setIsDesktop] = useState(false);
   const NAV_DROP = 32;
+
+  // A/B dock experiment: default from config, overridable with ?dock=a / ?dock=b.
+  const dockMode: DockMode = (() => {
+    const override = new URLSearchParams(window.location.search).get('dock')?.toLowerCase();
+    if (override === 'b') return 'B';
+    if (override === 'a') return 'A';
+    return DEFAULT_DOCK_MODE;
+  })();
 
   // Track viewport class for the nav's reveal timing (it comes down to meet the name).
   useEffect(() => {
@@ -121,7 +130,7 @@ export function App() {
 
   // The nav descends to meet the name. On desktop the hero is close to the
   // top so it reveals early; on mobile it waits until the name is nearly docked.
-  const navRange: [number, number] = isDesktop ? [0, 110] : [320, 430];
+  const navRange: [number, number] = isDesktop ? [0, 110] : [250, 350];
   const navOpacity = useTransform(scrollY, navRange, [0, 1]);
   const navY = useTransform(scrollY, navRange, [-NAV_DROP, 0]);
 
@@ -162,6 +171,7 @@ export function App() {
           startShadow={
             isDesktop ? '0 0 0 rgba(0,0,0,0)' : '0 2px 18px rgba(20,21,24,0.35)'
           }
+          mode={dockMode}
         />
 
         {/* 2. STATIC VISUAL STAGE (outside the scroll area, so it can never move with the page) */}
