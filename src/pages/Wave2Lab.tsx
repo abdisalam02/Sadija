@@ -140,7 +140,7 @@ const Wave2Lab: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-wider">
             <a href="/?lab=signature" className="text-neutral-400 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900">
-              Gemini originals
+              previous lab
             </a>
             <a href="/" className="text-neutral-400 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900">
               back to site
