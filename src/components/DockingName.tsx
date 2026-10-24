@@ -7,6 +7,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import { DockMode } from '../config/animationConfig';
+import { isTikTokWebView } from '../utils/runtimeProfile';
 
 interface DockGeometry {
   name: string;
@@ -429,12 +430,17 @@ const DockD: React.FC<DockVariantProps> = (props) => {
    * appeared to step. That build also animated colour/text-shadow on the same
    * element, which forced a repaint every frame — the stepping was the repaint,
    * not the timeline. The clone now only animates transform + opacity, so the
-   * compositor path is available on Android WebView too.
+   * compositor path is correct on Chrome, Samsung Internet and Instagram.
+   *
+   * TikTok's Android WebView is the exception: it claims scroll-timeline
+   * support but updates the animation on the main thread in chunks, which makes
+   * the page look like it is teleporting. It gets the JS scrub.
    *
    * `?dockpath=css` / `?dockpath=js` forces one on a real device for comparing.
    */
   const override = new URLSearchParams(window.location.search).get('dockpath');
-  const useCompositor = override === 'js' ? false : supported;
+  const useCompositor =
+    override === 'css' ? supported : override === 'js' ? false : supported && !isTikTokWebView();
 
   if (!useCompositor) {
     return (

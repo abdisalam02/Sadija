@@ -51,6 +51,24 @@
   box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.06);
 }
 
+/*
+ * TikTok's Android WebView does not composite `backdrop-filter`; it re-blurs
+ * the backdrop on the main thread, and with a handful of glass cards on screen
+ * that drags the entire scroll down (reported as "the page is teleporting").
+ * None of the browsers composite it badly — this is scoped to that one UA.
+ * The cards fall back to near-solid paper, which keeps every label readable.
+ */
+html[data-webview='tiktok'] .glass-frosted {
+  background: rgba(252, 251, 248, 0.92);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-webview='tiktok'] .nav-sheet {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* Hover Lift */
 .card-hover {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background-color 0.3s ease;
