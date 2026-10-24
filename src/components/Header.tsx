@@ -184,9 +184,14 @@ export const Header: React.FC<HeaderProps> = ({
     >
       {/* Hangs from the viewport's top edge: square at the top, curved at the
           bottom, no top border — so it reads as a tab attached to the ceiling
-          rather than a pill floating in the page. */}
+          rather than a pill floating in the page.
+          The surface is the page's own paper colour (#fcfbf8), and there is no
+          hairline border or drop shadow. Blending a colour over itself is a
+          no-op, so over the paper the card is invisible — only the wordmark and
+          icons read. The backdrop blur and the tint only become visible when
+          real imagery (the stage photo, media cards) passes underneath. */}
       <div
-        className="pointer-events-auto w-full max-w-lg flex items-center justify-between gap-6 rounded-b-[26px] border border-t-0 border-neutral-200/70 bg-white/90 px-5 pb-2.5 backdrop-blur-xl shadow-[0_10px_28px_-14px_rgba(15,15,20,0.2)]"
+        className="pointer-events-auto w-full max-w-lg flex items-center justify-between gap-6 rounded-b-[26px] bg-cream-50/90 px-5 pb-2.5 backdrop-blur-xl"
         style={{ paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))' }}
       >
         <motion.span
