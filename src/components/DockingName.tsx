@@ -145,18 +145,24 @@ export const DockingName: React.FC<DockingNameProps> = ({
 
   useEffect(() => {
     let cancelled = false;
+    let timer = 0;
 
     const runMeasure = () => {
       if (!cancelled) measure();
     };
 
-    const timer = window.setTimeout(runMeasure, 900);
-
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(() => {
-        if (!cancelled) window.setTimeout(runMeasure, 850);
-      });
-    }
+    // Measure once the display face is actually in the document. On a cold
+    // cache — which is every visit from an Instagram or TikTok link — Syne
+    // arrives after the fallback has already painted, and re-measuring
+    // mid-dock resized the wordmark under the user's eye. The 2s net keeps the
+    // name dockable if the font request never resolves.
+    timer = window.setTimeout(runMeasure, 2000);
+    document.fonts?.ready.then(() => {
+      if (cancelled) return;
+      window.clearTimeout(timer);
+      // One task after the swap so layout is using the final metrics.
+      timer = window.setTimeout(runMeasure, 60);
+    });
 
     window.addEventListener('resize', runMeasure);
     return () => {
@@ -458,9 +464,14 @@ const DockD: React.FC<DockVariantProps & { mobile?: boolean }> = (props) => {
 };
 
 /**
- * D without the native scroll timeline (Safari/Firefox): the exact same
- * linear scrub, but driven from the scroll MotionValue. No spring, so there
- * is no lag or bounce — it simply tracks the page like the compositor version.
+ * D without the native scroll timeline (Safari/Firefox, and every phone).
+ *
+ * The exact same linear scrub as the compositor version, driven from the
+ * scroll MotionValue. **No spring.** A spring tracking a constant-velocity
+ * scroll has a steady-state error of velocity / ωₙ, which measured ~35px of
+ * travel on a phone — the wordmark's Y followed the finger but its scale
+ * trailed behind, so the shrink visibly lagged the page. Scale and X now come
+ * from the same scroll value as Y, so all three move in lockstep.
  */
 const DockDScrub: React.FC<DockVariantProps> = ({
   geometry,
@@ -470,16 +481,7 @@ const DockDScrub: React.FC<DockVariantProps> = ({
   startShadow,
 }) => {
   const distance = geometry.distance;
-  const rawProgress = useTransform(scrollY, (value) => clamp01(value / distance));
-  // Position stays locked to the scroll (no A-style trailing). Only the
-  // horizontal travel and size are interpolated, so touch-scroll steps and
-  // coarse scroll timelines cannot make the scale visibly jump.
-  const progress = useSpring(rawProgress, {
-    stiffness: 900,
-    damping: 32,
-    mass: 0.18,
-    restDelta: 0.0005,
-  });
+  const progress = useTransform(scrollY, (value) => clamp01(value / distance));
   const x = useTransform(
     progress,
     [0, 1],

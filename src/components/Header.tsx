@@ -191,7 +191,7 @@ export const Header: React.FC<HeaderProps> = ({
           icons read. The backdrop blur and the tint only become visible when
           real imagery (the stage photo, media cards) passes underneath. */}
       <div
-        className="pointer-events-auto w-full max-w-lg flex items-center justify-between gap-6 rounded-b-[26px] bg-cream-50/90 px-5 pb-2.5 backdrop-blur-xl"
+        className="pointer-events-auto w-full max-w-lg flex items-center justify-between gap-6 rounded-b-[26px] bg-cream-50/90 px-5 pb-2.5 backdrop-blur-lg sm:backdrop-blur-xl"
         style={{ paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))' }}
       >
         <motion.span
