@@ -56,7 +56,15 @@ export const clientProfile: ClientProfile = {
     title: "Men Don't Hate Influencers. They Hate Women",
     description: 'Latest video essay exploring online culture, media narratives, and social commentary by Sadija.',
     videoId: 'veNlnoJv_jI',
-    channelId: 'UC7SXejrkmGcRqKjjaqYcWDw'
+    channelId: 'UC7SXejrkmGcRqKjjaqYcWDw',
+    // Read from the live watch page on 24 Oct 2026. Views drift — refresh this
+    // by hand (or wire up the YouTube Data API) when the number matters.
+    channelName: 'sadija.',
+    channelAvatar: './img/yt-avatar.jpg',
+    views: 9072,
+    likes: 101,
+    publishedAt: '2026-10-18T10:16:12-07:00',
+    durationSeconds: 903
   },
   podcast: {
     showTitle: "sadija.s podcast",

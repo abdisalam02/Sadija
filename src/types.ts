@@ -52,6 +52,13 @@ export interface ClientProfile {
     description: string;
     videoId: string;
     channelId?: string;
+    channelName?: string;
+    channelAvatar?: string;
+    views?: number;
+    likes?: number;
+    /** ISO upload timestamp — the card renders "x days ago" from this. */
+    publishedAt?: string;
+    durationSeconds?: number;
   };
   spotify?: {
     trackTitle: string;
