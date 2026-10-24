@@ -31,7 +31,6 @@ interface DockingNameProps {
   onReady?: () => void;
   /** Reports the measured travel so the nav can finish arriving exactly when the name lands. */
   onDistance?: (distance: number) => void;
-  mobile?: boolean;
   startColor?: string;
   startShadow?: string;
   mode?: DockMode;
@@ -78,7 +77,6 @@ export const DockingName: React.FC<DockingNameProps> = ({
   name,
   onReady,
   onDistance,
-  mobile = false,
   startColor = '#3d3d3d',
   startShadow = '0 0 0 rgba(0,0,0,0)',
   mode = 'A',
@@ -156,12 +154,17 @@ export const DockingName: React.FC<DockingNameProps> = ({
     // arrives after the fallback has already painted, and re-measuring
     // mid-dock resized the wordmark under the user's eye. The 2s net keeps the
     // name dockable if the font request never resolves.
+    //
+    // The 900ms floor matters: the hero section animates in from y:30 over
+    // 700ms, and measuring inside that window reads a *translated* rect, which
+    // silently stretches the dock's travel by the animation's offset.
+    const mountedAt = performance.now();
     timer = window.setTimeout(runMeasure, 2000);
     document.fonts?.ready.then(() => {
       if (cancelled) return;
       window.clearTimeout(timer);
-      // One task after the swap so layout is using the final metrics.
-      timer = window.setTimeout(runMeasure, 60);
+      const wait = Math.max(0, 900 - (performance.now() - mountedAt));
+      timer = window.setTimeout(runMeasure, wait);
     });
 
     window.addEventListener('resize', runMeasure);
@@ -183,7 +186,7 @@ export const DockingName: React.FC<DockingNameProps> = ({
   };
 
   if (mode === 'E') return null;
-  if (mode === 'D') return <DockD {...shared} mobile={mobile} />;
+  if (mode === 'D') return <DockD {...shared} />;
   if (mode === 'B') return <DockTimed {...shared} mode="B" zone={110} colorMode="mixed" spring={B_SPRING} />;
   if (mode === 'C') return <DockTimed {...shared} mode="C" zone={20} colorMode="mixed" spring={C_SPRING} />;
   return <DockA {...shared} />;
@@ -408,15 +411,32 @@ const DockTimed: React.FC<
 
 /* ── D — native CSS scroll-driven animation ─────────────────────────────── */
 
-const DockD: React.FC<DockVariantProps & { mobile?: boolean }> = (props) => {
-  const { geometry, ready, startColor, startShadow, mobile } = props;
+const DockD: React.FC<DockVariantProps> = (props) => {
+  const { geometry, ready, startColor, startShadow } = props;
 
   const supported =
     typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline: scroll()');
-  // Mobile gets the JS version even where the native timeline exists: some
-  // mobile compositors step the scroll timeline, which makes the scale look
-  // like it teleports. DockDScrub adds a tight spring to the size only.
-  if (mobile || !supported) {
+
+  /**
+   * Which engine runs the dock.
+   *
+   * `css` keeps the whole thing on the compositor: the scroll timeline maps
+   * offset to transform with no JS per frame, so a busy main thread (video
+   * decode, backdrop blur, font work) cannot make it stutter. `js` is the
+   * fallback for engines without scroll timelines (Safari/WebKit, Firefox).
+   *
+   * Mobile used to be forced onto `js` because an older build's timeline
+   * appeared to step. That build also animated colour/text-shadow on the same
+   * element, which forced a repaint every frame — the stepping was the repaint,
+   * not the timeline. The clone now only animates transform + opacity, so the
+   * compositor path is available on Android WebView too.
+   *
+   * `?dockpath=css` / `?dockpath=js` forces one on a real device for comparing.
+   */
+  const override = new URLSearchParams(window.location.search).get('dockpath');
+  const useCompositor = override === 'js' ? false : supported;
+
+  if (!useCompositor) {
     return (
       <DockDScrub
         geometry={geometry}

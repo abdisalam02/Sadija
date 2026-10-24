@@ -211,7 +211,6 @@ export function App() {
             name={clientProfile.name}
             onReady={handleNameReady}
             onDistance={handleDockDistance}
-            mobile={!isDesktop}
             startColor={isDesktop ? '#3d3d3d' : '#ffffff'}
             startShadow={
               isDesktop ? '0 0 0 rgba(0,0,0,0)' : '0 2px 18px rgba(20,21,24,0.35)'

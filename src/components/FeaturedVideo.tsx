@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 import { Play, Volume2, VolumeX } from 'lucide-react';
 import { useMedia } from '../context/MediaContext';
 
@@ -87,6 +86,11 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
   durationSeconds,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [playerMounted, setPlayerMounted] = useState(false);
+  const [posterSrc, setPosterSrc] = useState(
+    `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
+  );
 
   const {
     isYouTubeMuted,
@@ -98,10 +102,44 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
     setYouTubeTitle,
   } = useMedia();
 
+  /**
+   * Hold the player back until the card is properly in view, and drive the
+   * "in view" flag from the same observer.
+   *
+   * The block sits just below the fold, so an eager iframe meant a muted video
+   * was decoding while the hero was still animating — the worst possible
+   * moment on a phone, and the first thing to go when an in-app browser runs
+   * out of headroom. The poster is the real thumbnail, so the card looks
+   * finished while it waits, and the -50% margin keeps playback from starting
+   * until the dock has completed.
+   *
+   * Both flags come from one observer on purpose: if the floating player could
+   * appear before the iframe exists, it would offer pause/mute buttons that
+   * have nothing to talk to.
+   */
   useEffect(() => {
-    registerYouTubeIframe(iframeRef.current);
+    const host = cardRef.current;
+    if (!host || typeof IntersectionObserver === 'undefined') {
+      setPlayerMounted(true);
+      setIsYouTubeInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some((entry) => entry.isIntersecting);
+        setIsYouTubeInView(visible);
+        if (visible) setPlayerMounted(true);
+      },
+      { rootMargin: '0px 0px -50% 0px' }
+    );
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [setIsYouTubeInView]);
+
+  useEffect(() => {
+    if (playerMounted) registerYouTubeIframe(iframeRef.current);
     setYouTubeTitle(title);
-  }, [title]);
+  }, [title, playerMounted]);
 
   // Ask the player to report state changes so taps inside the video keep the UI in sync
   const handleIframeLoad = () => {
@@ -116,56 +154,69 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
   const duration = typeof durationSeconds === 'number' ? formatDuration(durationSeconds) : null;
 
   return (
-    <motion.div
-      onViewportEnter={() => setIsYouTubeInView(true)}
-      onViewportLeave={() => setIsYouTubeInView(false)}
-      viewport={{ margin: '-10% 0px -10% 0px' }}
+    <div
+      ref={cardRef}
       className="rounded-3xl lg:rounded-[2rem] glass-frosted p-3.5 sm:p-4 card-hover shadow-lg select-none"
       // YouTube's own UI font: Roboto where it exists, Arial everywhere else.
       style={{ fontFamily: "Roboto, 'Helvetica Neue', Arial, sans-serif" }}
     >
       {/* Player. 16:9, 12px radius — YouTube's player geometry. */}
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
-        <iframe
-          ref={iframeRef}
-          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&rel=0&modestbranding=1`}
-          title={title}
-          onLoad={handleIframeLoad}
-          className="h-full w-full border-0 pointer-events-none"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        {/* Real thumbnail underneath, so the player can mount late without a
+            black hole. It is covered the moment the iframe paints. */}
+        <img
+          src={posterSrc}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setPosterSrc(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`)}
         />
 
+        {playerMounted && (
+          <iframe
+            ref={iframeRef}
+            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&rel=0&modestbranding=1`}
+            title={title}
+            onLoad={handleIframeLoad}
+            className="relative h-full w-full border-0 pointer-events-none"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          />
+        )}
+
         {/* Length badge, bottom-right, exactly where YouTube puts it. Hidden
-            while the video is playing, as a real player would. */}
-        {duration && !isYouTubePlaying && (
+            once the video is actually playing, as a real player would. */}
+        {duration && (!isYouTubePlaying || !playerMounted) && (
           <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1 py-0.5 text-[11px] font-medium leading-[1.35] tabular-nums text-white">
             {duration}
           </span>
         )}
 
-        <button
-          type="button"
-          onClick={toggleYouTubeAudio}
-          aria-label={isYouTubeMuted ? 'Unmute video' : 'Mute video'}
-          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75 active:scale-90"
-        >
-          {isYouTubeMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </button>
+        {playerMounted && (
+          <>
+            <button
+              type="button"
+              onClick={toggleYouTubeAudio}
+              aria-label={isYouTubeMuted ? 'Unmute video' : 'Mute video'}
+              className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75 active:scale-90"
+            >
+              {isYouTubeMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
 
-        {/* The video is the play button: YouTube chrome is hidden, so the
-            whole surface toggles playback. */}
-        <button
-          type="button"
-          onClick={toggleYouTubePlay}
-          aria-label={isYouTubePlaying ? 'Pause video' : 'Play video'}
-          className="absolute inset-0 flex h-full w-full cursor-pointer items-center justify-center"
-        >
-          {!isYouTubePlaying && (
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm">
-              <Play className="ml-0.5 h-6 w-6 fill-white text-white" />
-            </span>
-          )}
-        </button>
+            {/* The video is the play button: YouTube chrome is hidden, so the
+                whole surface toggles playback. */}
+            <button
+              type="button"
+              onClick={toggleYouTubePlay}
+              aria-label={isYouTubePlaying ? 'Pause video' : 'Play video'}
+              className="absolute inset-0 flex h-full w-full cursor-pointer items-center justify-center"
+            >
+              {!isYouTubePlaying && (
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm">
+                  <Play className="ml-0.5 h-6 w-6 fill-white text-white" />
+                </span>
+              )}
+            </button>
+          </>
+        )}
       </div>
 
       {/* Metadata block — avatar, title, channel, views, age. */}
@@ -201,6 +252,6 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
