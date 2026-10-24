@@ -181,10 +181,9 @@ export function App() {
     }
   });
 
-  // Views / likes / age / duration in clientConfig describe one specific
-  // upload. If the RSS feed swaps in a newer video, those numbers would be
-  // describing the wrong thing, so they are only passed through when the
-  // playing video is the one the metadata was read from.
+  // Views / age / duration in clientConfig describe one specific upload. If
+  // the RSS feed swaps in a newer video, those numbers would describe the
+  // wrong thing, so they are only passed through for the configured video.
   const ytMetaIsCurrent = youtubeVideo.videoId === clientProfile.youtube.videoId;
 
   return (
@@ -296,7 +295,6 @@ export function App() {
                   channelName={clientProfile.youtube.channelName}
                   channelAvatar={clientProfile.youtube.channelAvatar}
                   views={ytMetaIsCurrent ? clientProfile.youtube.views : undefined}
-                  likes={ytMetaIsCurrent ? clientProfile.youtube.likes : undefined}
                   publishedAt={ytMetaIsCurrent ? clientProfile.youtube.publishedAt : undefined}
                   durationSeconds={
                     ytMetaIsCurrent ? clientProfile.youtube.durationSeconds : undefined

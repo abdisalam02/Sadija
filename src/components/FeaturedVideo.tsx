@@ -1,14 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Check,
-  Play,
-  Share2,
-  ThumbsDown,
-  ThumbsUp,
-  Volume2,
-  VolumeX,
-} from 'lucide-react';
+import { Play, Volume2, VolumeX } from 'lucide-react';
 import { useMedia } from '../context/MediaContext';
 
 /* ── YouTube-style number formatting ────────────────────────────────────── */
@@ -56,8 +48,6 @@ export const timeAgo = (iso: string) => {
   return `${years} year${years === 1 ? '' : 's'} ago`;
 };
 
-/* ── Small YouTube marks ────────────────────────────────────────────────── */
-
 /** YouTube's verified channel badge (four-point star with a tick). */
 const VerifiedBadge: React.FC = () => (
   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-[#606060]" aria-label="Verified">
@@ -72,15 +62,6 @@ const VerifiedBadge: React.FC = () => (
   </svg>
 );
 
-const YouTubeGlyph: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-    <path
-      fill="#FF0000"
-      d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-    />
-  </svg>
-);
-
 /* ── The card ───────────────────────────────────────────────────────────── */
 
 export interface FeaturedVideoProps {
@@ -90,18 +71,9 @@ export interface FeaturedVideoProps {
   channelName?: string;
   channelAvatar?: string;
   views?: number;
-  likes?: number;
   /** ISO timestamp of the upload. Drives the "x ago" line. */
   publishedAt?: string;
   durationSeconds?: number;
-  /**
-   * `card` keeps the site's frosted card around the video.
-   * `bare` drops the card entirely and lets the video sit on the page,
-   * the way a real YouTube embed does.
-   */
-  variant?: 'card' | 'bare';
-  /** Lab only: render the real YouTube poster instead of the live iframe. */
-  poster?: boolean;
 }
 
 export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
@@ -111,17 +83,10 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
   channelName = 'sadija.',
   channelAvatar = './img/yt-avatar.jpg',
   views,
-  likes,
   publishedAt,
   durationSeconds,
-  variant = 'card',
-  poster = false,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [copied, setCopied] = useState(false);
-  const [posterSrc, setPosterSrc] = useState(
-    `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
-  );
 
   const {
     isYouTubeMuted,
@@ -134,10 +99,9 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
   } = useMedia();
 
   useEffect(() => {
-    if (poster) return;
     registerYouTubeIframe(iframeRef.current);
     setYouTubeTitle(title);
-  }, [title, poster]);
+  }, [title]);
 
   // Ask the player to report state changes so taps inside the video keep the UI in sync
   const handleIframeLoad = () => {
@@ -147,100 +111,61 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
     );
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url: youtubeUrl });
-        return;
-      } catch {
-        // fall through to clipboard
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(youtubeUrl);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard blocked — the link is still in the pill */
-    }
-  };
-
   const viewsText = typeof views === 'number' ? formatViews(views) : null;
   const publishedText = publishedAt ? timeAgo(publishedAt) : null;
   const duration = typeof durationSeconds === 'number' ? formatDuration(durationSeconds) : null;
-  const showDuration = duration && (poster || !isYouTubePlaying);
 
   return (
     <motion.div
       onViewportEnter={() => setIsYouTubeInView(true)}
       onViewportLeave={() => setIsYouTubeInView(false)}
       viewport={{ margin: '-10% 0px -10% 0px' }}
-      className={
-        variant === 'card'
-          ? 'rounded-3xl lg:rounded-[2rem] glass-frosted p-3.5 sm:p-4 card-hover shadow-lg select-none'
-          : 'select-none'
-      }
+      className="rounded-3xl lg:rounded-[2rem] glass-frosted p-3.5 sm:p-4 card-hover shadow-lg select-none"
       // YouTube's own UI font: Roboto where it exists, Arial everywhere else.
       style={{ fontFamily: "Roboto, 'Helvetica Neue', Arial, sans-serif" }}
     >
       {/* Player. 16:9, 12px radius — YouTube's player geometry. */}
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
-        {poster ? (
-          <img
-            src={posterSrc}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={() => setPosterSrc(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`)}
-          />
-        ) : (
-          <iframe
-            ref={iframeRef}
-            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&rel=0&modestbranding=1`}
-            title={title}
-            onLoad={handleIframeLoad}
-            className="h-full w-full border-0 pointer-events-none"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          />
-        )}
+        <iframe
+          ref={iframeRef}
+          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&rel=0&modestbranding=1`}
+          title={title}
+          onLoad={handleIframeLoad}
+          className="h-full w-full border-0 pointer-events-none"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        />
 
-        {/* Length badge, bottom-right, exactly where YouTube puts it. */}
-        {showDuration && (
+        {/* Length badge, bottom-right, exactly where YouTube puts it. Hidden
+            while the video is playing, as a real player would. */}
+        {duration && !isYouTubePlaying && (
           <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1 py-0.5 text-[11px] font-medium leading-[1.35] tabular-nums text-white">
             {duration}
           </span>
         )}
 
-        {!poster && (
-          <>
-            <button
-              type="button"
-              onClick={toggleYouTubeAudio}
-              aria-label={isYouTubeMuted ? 'Unmute video' : 'Mute video'}
-              className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75 active:scale-90"
-            >
-              {isYouTubeMuted ? (
-                <VolumeX className="h-4 w-4" />
-              ) : (
-                <Volume2 className="h-4 w-4" />
-              )}
-            </button>
+        <button
+          type="button"
+          onClick={toggleYouTubeAudio}
+          aria-label={isYouTubeMuted ? 'Unmute video' : 'Mute video'}
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75 active:scale-90"
+        >
+          {isYouTubeMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </button>
 
-            {/* The video is the play button: YouTube chrome is hidden, so the
-                whole surface toggles playback. */}
-            <button
-              type="button"
-              onClick={toggleYouTubePlay}
-              aria-label={isYouTubePlaying ? 'Pause video' : 'Play video'}
-              className="absolute inset-0 flex h-full w-full cursor-pointer items-center justify-center"
-            >
-              {!isYouTubePlaying && (
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm">
-                  <Play className="ml-0.5 h-6 w-6 fill-white text-white" />
-                </span>
-              )}
-            </button>
-          </>
-        )}
+        {/* The video is the play button: YouTube chrome is hidden, so the
+            whole surface toggles playback. */}
+        <button
+          type="button"
+          onClick={toggleYouTubePlay}
+          aria-label={isYouTubePlaying ? 'Pause video' : 'Play video'}
+          className="absolute inset-0 flex h-full w-full cursor-pointer items-center justify-center"
+        >
+          {!isYouTubePlaying && (
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm">
+              <Play className="ml-0.5 h-6 w-6 fill-white text-white" />
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Metadata block — avatar, title, channel, views, age. */}
@@ -253,9 +178,16 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
         />
 
         <div className="min-w-0 flex-1">
-          <h3 className="line-clamp-2 text-[15px] font-medium leading-[1.35] text-[#0f0f0f]">
+          {/* The title is the way out to YouTube — no chip row needed. */}
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Watch “${title}” on YouTube`}
+            className="line-clamp-2 text-[15px] font-medium leading-[1.35] text-[#0f0f0f] hover:underline hover:decoration-[#0f0f0f]/40 hover:underline-offset-2"
+          >
             {title}
-          </h3>
+          </a>
 
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0 text-[12.5px] leading-5 text-[#606060]">
             <span className="flex items-center gap-1">
@@ -268,55 +200,6 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
             {publishedText && <span>{publishedText}</span>}
           </p>
         </div>
-      </div>
-
-      {/* Action pills — YouTube's light-theme chip row. On narrow screens it
-          scrolls sideways instead of wrapping, like the real thing. */}
-      <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex h-9 shrink-0 items-center overflow-hidden rounded-full bg-[#f2f2f2]">
-          <a
-            href={youtubeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Like this video on YouTube"
-            className="flex h-full items-center gap-1.5 px-3.5 text-[13px] font-medium text-[#0f0f0f] transition-colors hover:bg-[#e5e5e5]"
-          >
-            <ThumbsUp className="h-4 w-4" />
-            {typeof likes === 'number' ? likes : 'Like'}
-          </a>
-          <span className="h-6 w-px bg-black/10" aria-hidden="true" />
-          <a
-            href={youtubeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Open the video on YouTube to rate it"
-            className="flex h-full items-center px-3 text-[#0f0f0f] transition-colors hover:bg-[#e5e5e5]"
-          >
-            <ThumbsDown className="h-4 w-4" />
-          </a>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleShare}
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[#f2f2f2] px-3.5 text-[13px] font-medium text-[#0f0f0f] transition-colors hover:bg-[#e5e5e5]"
-        >
-          {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Share2 className="h-4 w-4" />}
-          {copied ? 'Copied' : 'Share'}
-        </button>
-
-        <a
-          href={youtubeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Watch on YouTube"
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[#f2f2f2] px-3 text-[13px] font-medium text-[#0f0f0f] transition-colors hover:bg-[#e5e5e5] sm:px-3.5"
-        >
-          <YouTubeGlyph className="h-4 w-4" />
-          {/* YouTube's own mobile row is icon-only, so the label drops below sm
-              and the whole row fits without scrolling. */}
-          <span className="hidden sm:inline">Watch on YouTube</span>
-        </a>
       </div>
     </motion.div>
   );

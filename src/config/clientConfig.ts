@@ -62,7 +62,6 @@ export const clientProfile: ClientProfile = {
     channelName: 'sadija.',
     channelAvatar: './img/yt-avatar.jpg',
     views: 9072,
-    likes: 101,
     publishedAt: '2026-10-18T10:16:12-07:00',
     durationSeconds: 903
   },

@@ -72,12 +72,11 @@ High-fashion editorial linktree/portfolio for Scandinavian creator **SADIJA** (O
    - `SADIJA` in monumental Syne font (white text with deep drop shadow).
    - Social links stack with interleaved fading transparency.
 2. **YouTube Broadcast (`FeaturedVideo.tsx`)**:
-   - Styled as a real YouTube video, not a generic media card: 12px player radius, a `15:03` length badge in YouTube's bottom-right position, then the watch-page metadata block (36px channel avatar, 15px/500 two-line title, `sadija.` with the verified star, `9.1K views · 6 days ago`) and the light-theme chip row (segmented like/dislike, Share, Watch on YouTube).
+   - Styled as a real YouTube video, not a generic media card: 12px player radius, a `15:03` length badge in YouTube's bottom-right position, then YouTube's own metadata block — 36px channel avatar, 15px/500 two-line title, and `sadija.` with the verified star followed by `9.1K views · 6 days ago`.
+   - The card stops there. The like / share / Watch-on-YouTube chip row was removed on request, so there is no chip row to maintain — the **title itself links to the video**, and the red YouTube glyphs that used to sit at the bottom are gone.
    - The whole block is set in `Roboto, Helvetica Neue, Arial` — YouTube's own stack — so the numbers and labels read the way YouTube's do rather than in the site's Jakarta.
-   - `variant="card"` keeps the frosted card around it; `variant="bare"` drops the wrapper and lets it sit straight on the paper. Production currently uses **card**; `?lab=youtube` renders both side by side with real data for comparison.
-   - `views`, `likes`, `publishedAt` and `durationSeconds` live in `clientConfig.youtube` (read from the watch page on 24 Oct 2026). The age line is computed from `publishedAt` on every render, so it stays truthful; the view count is a manual field. They are only passed to the card when the playing video is the configured one, so a newer video from the RSS feed never inherits the old video's numbers.
+   - `views`, `publishedAt` and `durationSeconds` live in `clientConfig.youtube` (read from the watch page on 24 Oct 2026). The age line is computed from `publishedAt` on every render, so it stays truthful; the view count is a manual field. They are only passed to the card when the playing video is the configured one, so a newer video from the RSS feed never inherits the old video's numbers.
    - Playback is unchanged: full-surface tap-to-play/pause, icon-only mute on the player (top-right, like YouTube's overlay controls), inline muted autoplay. The length badge hides while playing, as a real player would.
-   - Mobile keeps the chip row on one line by dropping the "Watch on YouTube" label to the logo only (YouTube's own mobile row is icon-only), so nothing clips at 360px.
 3. **Spotify Podcast (`SpotifyPlayer.tsx`)**:
    - Right-docked glass card (`w-[72%] max-w-[320px]`).
    - Episode 1: *Am I The A**Hole?* (`podcast_preview.mp3`).

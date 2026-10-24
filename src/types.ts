@@ -55,7 +55,6 @@ export interface ClientProfile {
     channelName?: string;
     channelAvatar?: string;
     views?: number;
-    likes?: number;
     /** ISO upload timestamp — the card renders "x days ago" from this. */
     publishedAt?: string;
     durationSeconds?: number;
