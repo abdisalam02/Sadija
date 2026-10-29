@@ -124,13 +124,14 @@ export const FeaturedVideo: React.FC<FeaturedVideoProps> = ({
       setIsYouTubeInView(true);
       return;
     }
+    const scroller = document.getElementById('app-scroll');
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.some((entry) => entry.isIntersecting);
         setIsYouTubeInView(visible);
         if (visible) setPlayerMounted(true);
       },
-      { rootMargin: '0px 0px -50% 0px' }
+      { root: scroller, rootMargin: '0px 0px -50% 0px' }
     );
     observer.observe(host);
     return () => observer.disconnect();

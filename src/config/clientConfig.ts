@@ -53,17 +53,17 @@ export const clientProfile: ClientProfile = {
     }
   ],
   youtube: {
-    title: "Men Don't Hate Influencers. They Hate Women",
+    title: "Gilmore Girl's beef with Asians had to be personal",
     description: 'Latest video essay exploring online culture, media narratives, and social commentary by Sadija.',
-    videoId: 'veNlnoJv_jI',
+    videoId: 'WKYoPkt_LHQ',
     channelId: 'UC7SXejrkmGcRqKjjaqYcWDw',
-    // Read from the live watch page on 24 Oct 2026. Views drift — refresh this
-    // by hand (or wire up the YouTube Data API) when the number matters.
+    // Fallback static metadata. /api/latest-video dynamically updates videoId, title,
+    // and publication date on both Vercel and local dev.
     channelName: 'sadija.',
     channelAvatar: './img/yt-avatar.jpg',
-    views: 9072,
-    publishedAt: '2026-10-18T10:16:12-07:00',
-    durationSeconds: 903
+    views: 6250,
+    publishedAt: '2026-10-25T23:19:34+00:00',
+    durationSeconds: 948
   },
   podcast: {
     showTitle: "sadija.s podcast",

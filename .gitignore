@@ -16,3 +16,4 @@ embed_data.json
 *.png
 !public/**
 chrome_tmp/
+fetched-music/

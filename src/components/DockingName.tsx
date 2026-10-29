@@ -90,8 +90,17 @@ export const DockingName: React.FC<DockingNameProps> = ({
     const heading = document.getElementById('client-name-title');
     const navBrand = document.getElementById('nav-brand');
     const scroller = document.getElementById('app-scroll');
+    const shell = document.getElementById('app-shell');
 
     if (!text || !heading || !navBrand) return;
+
+    const shellRect = shell?.getBoundingClientRect();
+    const scaleFactor =
+      shell && shellRect && shell.offsetWidth > 0
+        ? shellRect.width / shell.offsetWidth
+        : 1;
+    const offsetLeft = shellRect ? shellRect.left : 0;
+    const offsetTop = shellRect ? shellRect.top : 0;
 
     const textRect = text.getBoundingClientRect();
     // The nav is hinged/transformed while it is folded away, so its live rect
@@ -111,23 +120,29 @@ export const DockingName: React.FC<DockingNameProps> = ({
     const brandFontSize = parseFloat(brandComputed.fontSize) || 14;
     const scale = brandFontSize / heroFontSize;
 
-    const startTop = textRect.top + scrollTop;
+    const localTextLeft = (textRect.left - offsetLeft) / scaleFactor;
+    const localTextTop = (textRect.top - offsetTop) / scaleFactor;
+    const localBrandLeft = (brandRect.left - offsetLeft) / scaleFactor;
+    const localBrandTop = (brandRect.top - offsetTop) / scaleFactor;
+    const localBrandHeight = brandRect.height / scaleFactor;
+
+    const startTop = localTextTop + scrollTop;
     // Centre the clone's *line box* (not the font's ink box) inside the brand's
     // line box, otherwise the scaled wordmark lands ~1.5px above the brand and
     // the hand-off at the end of the dock shows a visible nudge.
     const heroLineHeight = parseFloat(computed.lineHeight) || heroFontSize;
     const cloneLineHeight = heroLineHeight * scale;
-    const targetTop = brandRect.top + (brandRect.height - cloneLineHeight) / 2;
+    const targetTop = localBrandTop + (localBrandHeight - cloneLineHeight) / 2;
 
     const distance = Math.max(60, startTop - targetTop);
 
     setGeometry({
       name,
-      startLeft: textRect.left,
+      startLeft: localTextLeft,
       startTop,
-      startWidth: textRect.width,
-      startHeight: textRect.height,
-      targetLeft: brandRect.left,
+      startWidth: textRect.width / scaleFactor,
+      startHeight: textRect.height / scaleFactor,
+      targetLeft: localBrandLeft,
       targetTop,
       distance,
       scale,

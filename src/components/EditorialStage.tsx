@@ -9,6 +9,13 @@ export const LOCKED_TRANSFORMS: Record<string, StageTransform> = {
   'look-3': { scale: 1, x: '14svh', y: '-5lvh' },  // Hugs the right screen edge (1-remove trench)
 };
 
+// Fixed 390x844 (iPhone 19.5:9) stage equivalents (1svh = 1lvh = 8.44px).
+const REEL_TRANSFORMS: Record<string, StageTransform> = {
+  'look-1': { scale: 1, x: '-160.36px', y: '-42.2px' },
+  'look-2': { scale: 1, x: '-118.16px', y: '-42.2px' },
+  'look-3': { scale: 1, x: '118.16px', y: '-42.2px' },
+};
+
 const formatCoord = (val: number | string): string => {
   return typeof val === 'number' ? `${val}px` : val;
 };
@@ -22,12 +29,17 @@ export const EditorialStage: React.FC<EditorialStageProps> = ({
   looks,
   activeLookIndex,
 }) => {
+  const isReel =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('reel') === 'true';
+
   return (
     <div className="relative w-full h-full overflow-hidden select-none pointer-events-none">
       {/* Soft opacity-only crossfade: no blur or scale so the switch never looks harsh */}
       {looks.map((look, idx) => {
         const isActive = idx === activeLookIndex;
-        const transform = LOCKED_TRANSFORMS[look.id] || { scale: 1, x: 0, y: 0 };
+        const map = isReel ? REEL_TRANSFORMS : LOCKED_TRANSFORMS;
+        const transform = map[look.id] || { scale: 1, x: 0, y: 0 };
 
         return (
           <div
@@ -44,6 +56,7 @@ export const EditorialStage: React.FC<EditorialStageProps> = ({
             <img
               src={look.imageSrc}
               alt={`${look.title} — Sadija`}
+              style={isReel ? { height: '911.52px' } : undefined}
               className="h-[108lvh] sm:h-[115lvh] lg:h-[128lvh] w-auto max-w-none block"
               loading="eager"
               decoding="async"

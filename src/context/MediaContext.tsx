@@ -73,12 +73,11 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     audio.onended = () => {
       setIsSpotifyPlaying(false);
     };
-    audio.play().then(() => {
-      setIsSpotifyPlaying(true);
-    }).catch(() => {});
+    setSpotifyEpisode(episode);
+    setIsSpotifyPlaying(true);
+    audio.play().catch(() => {});
 
     audioRef.current = audio;
-    setSpotifyEpisode(episode);
   };
 
   const pauseSpotify = () => {

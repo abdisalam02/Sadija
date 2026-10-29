@@ -15,8 +15,9 @@ import { MediaProvider } from './context/MediaContext';
 import { fetchLatestYouTubeVideo } from './utils/mediaFetcher';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
 import { DEFAULT_DOCK_MODE, type DockMode } from './config/animationConfig';
+import ReelDirector from './pages/ReelDirector';
 
-export function App() {
+export function SadijaApp() {
   // The document never scrolls — all scrolling happens inside #app-scroll.
   // This keeps the mobile browser URL bar expanded, so the static stage
   // below can never be shifted by the address-bar show/hide animation.
@@ -99,9 +100,16 @@ export function App() {
   }, []);
 
   // Dynamic YouTube state with automated background fetch
-  const [youtubeVideo, setYoutubeVideo] = useState({
+  const [youtubeVideo, setYoutubeVideo] = useState<{
+    title: string;
+    videoId: string;
+    publishedAt?: string;
+    views?: number;
+  }>({
     title: clientProfile.youtube.title,
     videoId: clientProfile.youtube.videoId,
+    publishedAt: clientProfile.youtube.publishedAt,
+    views: clientProfile.youtube.views,
   });
 
   // Auto-fetch latest YouTube video if channelId is provided
@@ -112,6 +120,8 @@ export function App() {
           setYoutubeVideo({
             title: res.title,
             videoId: res.videoId,
+            publishedAt: res.publishedAt || clientProfile.youtube.publishedAt,
+            views: res.views !== undefined ? res.views : clientProfile.youtube.views,
           });
         }
       });
@@ -293,8 +303,8 @@ export function App() {
                   videoId={youtubeVideo.videoId}
                   channelName={clientProfile.youtube.channelName}
                   channelAvatar={clientProfile.youtube.channelAvatar}
-                  views={ytMetaIsCurrent ? clientProfile.youtube.views : undefined}
-                  publishedAt={ytMetaIsCurrent ? clientProfile.youtube.publishedAt : undefined}
+                  views={youtubeVideo.views}
+                  publishedAt={youtubeVideo.publishedAt}
                   durationSeconds={
                     ytMetaIsCurrent ? clientProfile.youtube.durationSeconds : undefined
                   }
@@ -365,6 +375,14 @@ export function App() {
       </div>
     </MediaProvider>
   );
+}
+
+export function App() {
+  const isReel =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('reel') === 'true';
+  if (isReel) return <ReelDirector />;
+  return <SadijaApp />;
 }
 
 export default App;

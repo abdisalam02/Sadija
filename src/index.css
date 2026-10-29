@@ -332,3 +332,94 @@ html[data-webview='tiktok'] .nav-sheet {
   white-space: nowrap;
   animation: marquee 8s linear infinite;
 }
+
+/* ── Programmatic 9:16 Reel Stage Lock (?reel=true) ────────────────────── */
+
+html[data-reel='true'] #app-shell {
+  width: 390px !important;
+  height: 844px !important;
+}
+
+html[data-reel='true'] #app-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html[data-reel='true'] #app-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-reel='true'] aside[data-static-stage] {
+  width: 390px !important;
+  height: 844px !important;
+}
+
+html[data-reel='true'] aside[data-static-stage] .lg\:block {
+  display: none !important;
+}
+
+html[data-reel='true'] #app-scroll > div {
+  flex-direction: column !important;
+}
+
+html[data-reel='true'] #app-scroll > div > .lg\:block {
+  display: none !important;
+}
+
+html[data-reel='true'] #app-scroll main {
+  width: 100% !important;
+  max-width: none !important;
+  padding-top: 371px !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+  padding-bottom: 84px !important;
+}
+
+html[data-reel='true'] #client-name-title {
+  font-size: 3.1rem !important;
+  color: #ffffff !important;
+  filter: drop-shadow(0 2px 18px rgba(20, 21, 24, 0.35)) !important;
+}
+
+html[data-reel='true'] [data-hero-social] a {
+  flex-direction: row !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  padding: 1rem !important;
+}
+
+html[data-reel='true'] [data-hero-social] a > div:first-child {
+  flex-direction: row !important;
+  align-items: center !important;
+  width: auto !important;
+}
+
+html[data-reel='true'] [data-hero-social] a > div:last-child {
+  position: static !important;
+}
+
+html[data-reel='true'] main section:first-of-type > div:last-child > div {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.875rem !important;
+}
+
+html[data-reel='true'] #spotify-section > div > div {
+  width: 74% !important;
+  max-width: 312px !important;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  padding: 0.875rem !important;
+}
+
+html[data-reel='true'] #spotify-section .lg\:grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.625rem !important;
+}
+
+html[data-reel='true'] #collabs-section > div:first-child {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+}
